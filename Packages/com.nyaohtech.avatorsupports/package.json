@@ -1,0 +1,17 @@
+{
+  "name": "com.nyaohtech.avatorsupports",
+  "displayName": "Nt_AvatorSupports",
+  "version": "1.0.0",
+  "unity": "2022.3",
+  "description": "Nt_AvatorPerformanceChecker と Nt_SimpleMatResize をまとめて導入するための詰め合わせ。これ自体の機能はありません。",
+  "author": {
+    "name": "nyaohtech",
+    "url": "https://github.com/nyaohtech"
+  },
+  "documentationUrl": "https://nyaohtech.github.io/nyaohtech-vpm/",
+  "keywords": ["VRChat", "avatar", "bundle"],
+  "vpmDependencies": {
+    "com.nyaohtech.avatorperformancechecker": ">=1.0.2",
+    "com.nyaohtech.simplematresize": ">=1.1.2"
+  }
+}

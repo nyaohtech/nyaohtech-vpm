@@ -1,0 +1,16 @@
+{
+    "name": "com.nyaohtech.simplematresize.Editor",
+    "rootNamespace": "SimpleMatResize",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

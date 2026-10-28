@@ -1,0 +1,14 @@
+{
+  "name": "com.nyaohtech.avatorperformancechecker",
+  "displayName": "Nt_AvatorPerformanceChecker",
+  "version": "1.0.2",
+  "unity": "2022.3",
+  "description": "VRChatアバターのパフォーマンスランク（PC/Mobile）、テクスチャ・VRAM容量をSceneビューのオーバーレイとダッシュボードで確認できるチェッカー。",
+  "author": {
+    "name": "nyaohtech",
+    "url": "https://github.com/nyaohtech"
+  },
+  "documentationUrl": "https://nyaohtech.github.io/nyaohtech-vpm/",
+  "keywords": ["VRChat", "avatar", "performance", "editor"],
+  "vpmDependencies": {}
+}

@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>nyaohtech VPM Repository</title>
+<meta name="description" content="nyaohtech の VRChat アバター向けツールを VCC からポチッと導入できる VPM リポジトリです。">
+<meta property="og:title" content="nyaohtech VPM Repository">
+<meta property="og:description" content="VRChat アバター向けツールを VCC から導入">
+<link rel="icon" href="assets/logo.webp" type="image/webp">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700&family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --peach: #FED6B4; --rose: #F3A8BE; --sky: #A8D2EE;
+    --coral: #FF7A8A; --yellow: #FFD84D; --teal: #6FD3E0; --lime: #BFE04A; --pink: #FF9DB8; --soft: #fff6f8;
+    --ink: #333; --muted: #666; --line: #ddd; --band: #f0f0f0; --hh: 66px;
+    --brand: linear-gradient(120deg, var(--peach), var(--rose) 52%, var(--sky));
+    --font: Lato, "Noto Sans JP", "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; color: var(--ink); background: #fff; font: 400 15px/1.9 var(--font); overflow-x: hidden; }
+  a { color: inherit; }
+  img { max-width: 100%; height: auto; }
+  :focus-visible { outline: 3px solid var(--sky); outline-offset: 2px; }
+  .container { max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+  /* ---------- ヘッダー (公式サイトと同じ) ---------- */
+  .site-header { position: sticky; top: 0; z-index: 20; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .site-header .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: var(--hh); }
+  .brand { display: flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 700; text-decoration: none; }
+  .brand img { width: 40px; height: 40px; border-radius: 12px; }
+  .official { padding: 7px 20px; border: 2px solid var(--ink); border-radius: 999px; font-size: 13px; font-weight: 700; text-decoration: none; background: #fff; transition: background .15s, color .15s; }
+  .official:hover { background: var(--ink); color: #fff; }
+
+  /* ---------- 見出し帯: 色とりどりの丸 + 波形 ---------- */
+  .band {
+    position: relative; padding: 46px 20px 66px; text-align: center;
+    background:
+      radial-gradient(circle at 7% 34%, var(--yellow) 0 26px, transparent 27px),
+      radial-gradient(circle at 13% 82%, var(--teal) 0 13px, transparent 14px),
+      radial-gradient(circle at 21% 20%, #fff 0 7px, transparent 8px),
+      radial-gradient(circle at 91% 24%, var(--lime) 0 18px, transparent 19px),
+      radial-gradient(circle at 85% 78%, var(--coral) 0 30px, transparent 31px),
+      radial-gradient(circle at 96% 58%, #fff 0 9px, transparent 10px),
+      linear-gradient(120deg, #ffc9a8, var(--pink) 55%, #a7d6f3);
+  }
+  .band::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 26px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 26' preserveAspectRatio='none'%3E%3Cpath d='M0 26V14Q100 0 200 14T400 14T600 14T800 14T1000 14T1200 14V26Z' fill='%23fff'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat;
+  }
+  .band .logo { width: 120px; height: 120px; padding: 18px; border-radius: 50%; background: rgba(255,255,255,.85); box-shadow: 4px 4px 0 var(--ink); border: 3px solid var(--ink); }
+  .band h1 { margin: 12px 0 2px; font-size: clamp(1.6rem, 5vw, 2.3rem); font-weight: 900; letter-spacing: .03em; line-height: 1.4; text-shadow: 0 2px 0 rgba(255,255,255,.65); }
+  .total { display: inline-flex; align-items: baseline; gap: 10px; margin: 18px auto 0; padding: 6px 22px; background: rgba(255,255,255,.88); border: 2px solid var(--ink); border-radius: 999px; box-shadow: 3px 3px 0 var(--ink); }
+  .total__label { font-size: 13px; font-weight: 700; }
+  .total__n { font-size: 30px; font-weight: 900; line-height: 1.2; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
+  .band p { margin: 0 auto; max-width: 32em; font-weight: 700; }
+  .crumbs { font-size: 12px; color: var(--muted); padding: 10px 0 0; }
+
+  /* ---------- ボタン ---------- */
+  .btn { display: inline-block; cursor: pointer; text-decoration: none; font: inherit; font-size: 14px; font-weight: 700; padding: 9px 28px; border-radius: 999px; border: 2px solid var(--ink); background: #fff; color: var(--ink); transition: background .15s, color .15s, transform .15s; }
+  .btn:hover { background: var(--ink); color: #fff; transform: translateY(-2px); }
+  .btn--solid { background: var(--ink); color: #fff; }
+  .btn--solid:hover { background: #000; }
+  .btns { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 22px; }
+
+  /* ---------- 見出し・セクション ---------- */
+  section { padding-top: 12px; }
+  h2 { position: relative; margin: 40px 0 18px; padding-top: 18px; font-size: 24px; line-height: 1.4; }
+  h2::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 4px; border-radius: 4px; background: var(--brand); }
+  h2::after { content: "\2726"; position: absolute; right: 0; top: 12px; color: var(--pink); font-size: 18px; }
+  code { background: var(--band); border-radius: 3px; padding: 0 6px; font: 13px ui-monospace, Consolas, monospace; word-break: break-all; }
+
+  .repo { margin-top: -26px; position: relative; z-index: 2; background: #fff; border: 2px solid var(--ink); border-radius: 20px; box-shadow: 5px 5px 0 var(--pink); padding: 20px 22px; }
+  .repo h2 { margin: 0 0 8px; padding: 0; font-size: 18px; }
+  .repo h2::before, .repo h2::after { display: none; }
+  .urlbox { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: center; }
+  .urlbox code { flex: 1 1 280px; background: var(--soft); border: 2px solid var(--line); border-radius: 10px; padding: 8px 12px; user-select: all; }
+  .small { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
+
+  /* ---------- 応援のお願い ---------- */
+  .support { margin: 34px 0 0; padding: 22px 24px; background: var(--soft); border: 2px solid var(--ink); border-radius: 20px; box-shadow: 5px 5px 0 var(--yellow); text-align: center; }
+  .support h2 { margin: 0 0 8px; padding: 0; font-size: 20px; }
+  .support h2::before, .support h2::after { display: none; }
+  .support p { margin: 6px auto; max-width: 34em; text-align: left; }
+  .support .btns { margin-top: 14px; }
+
+  /* ---------- 製品カード (ステッカー風) ---------- */
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; list-style: none; margin: 0; padding: 6px 0 10px; }
+  .card { background: #fff; border: 2px solid var(--ink); border-radius: 20px; box-shadow: 5px 5px 0 var(--pink); overflow: hidden; display: flex; flex-direction: column; transition: transform .18s, box-shadow .18s; }
+  .card--wide { grid-column: 1 / -1; }
+  .card:hover { transform: translate(-2px, -3px) rotate(-.4deg); box-shadow: 8px 8px 0 var(--coral); }
+  .card__thumb { aspect-ratio: 16 / 7; border-bottom: 2px solid var(--ink); display: grid; place-items: center;
+    background: radial-gradient(circle at 16% 26%, var(--yellow) 0 24%, transparent 25%), radial-gradient(circle at 86% 76%, var(--teal) 0 28%, transparent 29%), radial-gradient(circle at 74% 14%, var(--coral) 0 15%, transparent 16%), radial-gradient(circle at 10% 90%, var(--lime) 0 13%, transparent 14%), #fffaf0; }
+  .card__thumb svg { width: 74px; height: 74px; padding: 16px; background: #fff; border: 2px solid var(--ink); border-radius: 22px; box-shadow: 4px 4px 0 var(--ink); transform: rotate(-4deg); }
+  .card__body { padding: 4px 20px 20px; display: flex; flex-direction: column; flex: 1; }
+  .card h3 { margin: 14px 0 0; font-size: 18px; line-height: 1.5; }
+  .ver { display: inline-block; margin: 2px 0 6px; padding: 0 10px; border: 2px solid var(--ink); border-radius: 999px; font-size: 11px; font-weight: 700; background: var(--yellow); }
+  .dl { margin-left: 6px; font-size: 12px; color: var(--muted); font-weight: 700; }
+  .card .lead { margin: 4px 0 6px; font-weight: 700; }
+  .card ul { margin: 0 0 10px; padding-left: 1.3em; font-size: 14px; }
+  .card li::marker { color: var(--coral); }
+  .meta { margin-top: auto; font-size: 12.5px; color: var(--muted); border-top: 2px dotted #f2c4d2; padding-top: 8px; }
+
+  ol.steps { margin: 0; padding: 0; list-style: none; counter-reset: s; }
+  ol.steps li { counter-increment: s; display: flex; gap: 14px; align-items: center; padding: 12px 0; border-bottom: 2px dotted #f2c4d2; }
+  ol.steps li::before { content: counter(s); flex: none; width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--ink); background: var(--yellow); display: grid; place-items: center; font-weight: 900; }
+  details { border-bottom: 2px dotted #f2c4d2; padding: 10px 0; }
+  summary { cursor: pointer; font-weight: 700; }
+  details p { margin: 6px 0 2px; color: var(--muted); font-size: 14px; }
+
+  /* ---------- 紹介帯・フッター ---------- */
+  .about { margin-top: 56px; background: var(--band); padding: 44px 0; }
+  .about .container { display: flex; align-items: center; gap: 44px; }
+  .about img { flex: none; width: 190px; height: 190px; padding: 14px; background: #fff; border: 2px solid var(--ink); border-radius: 24px; box-shadow: 5px 5px 0 var(--pink); }
+  .about h3 { margin: 0 0 14px; padding: 4px 12px; background: #e0e0e0; font-size: 15px; }
+  .about p { margin: 0 0 10px; font-size: 14px; }
+  footer { position: relative; margin-top: 70px; padding: 46px 0 40px; background: var(--soft); font-size: 13px; }
+  footer::before { content: ""; position: absolute; left: 0; right: 0; top: -22px; height: 24px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 24' preserveAspectRatio='none'%3E%3Cpath d='M0 24V12Q100 0 200 12T400 12T600 12T800 12T1000 12T1200 12V24Z' fill='%23fff6f8'/%3E%3C/svg%3E") bottom / 100% 100% no-repeat; }
+  footer .container { display: flex; align-items: center; gap: 24px; }
+  footer img { flex: none; width: 88px; height: 88px; border-radius: 22px; }
+  footer .tag { margin: 0 0 6px; font-weight: 900; font-size: 16px; }
+  footer ul { display: flex; flex-wrap: wrap; gap: 4px 20px; list-style: none; margin: 0 0 6px; padding: 0; }
+  footer a { text-decoration: none; } footer a:hover { text-decoration: underline; }
+  footer .copy { color: var(--muted); }
+
+  @media (max-width: 700px) {
+    .brand { font-size: 20px; }
+    .official { padding: 6px 14px; }
+    .total { flex-wrap: wrap; justify-content: center; }
+    .about .container, footer .container { flex-direction: column; align-items: flex-start; gap: 18px; }
+    .about img { width: 140px; height: 140px; }
+  }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } .card, .btn { transition: none; } .card:hover { transform: none; } }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a class="brand" href="https://nyaohtech.raindrop.jp/"><img src="assets/logo.webp" alt="" width="40" height="40"><span>Nyaohtech</span></a>
+    <a class="official" href="https://nyaohtech.raindrop.jp/">公式サイトへ <span aria-hidden="true">→</span></a>
+  </div>
+</header>
+
+<div class="band">
+  <img class="logo" src="assets/logo.webp" alt="nyaohtech のロゴ" width="120" height="120">
+  <h1>nyaohtech VPM Repository</h1>
+  <p>VCC から、ポチッと導入できるアバター向けツール集。</p>
+  <p class="total" id="total" hidden><span class="total__label">累計ダウンロード数</span><span class="total__n" id="totalN" aria-live="off">0</span></p>
+  <div class="btns">
+    <a class="btn btn--solid" id="addLink" href="#">VCC に追加する</a>
+    <a class="btn" href="#tools">ツールを見る</a>
+  </div>
+</div>
+
+<main class="container">
+  <div class="repo">
+    <h2>リポジトリ URL</h2>
+    <div class="urlbox">
+      <code id="repoUrl"></code>
+      <button class="btn" id="copyBtn" type="button">URL をコピー</button>
+    </div>
+    <p class="small">「VCC に追加する」で開かないときは、VCC の「Settings → Packages → Add Repository」にこの URL を貼り付けてください。</p>
+  </div>
+
+  <aside class="support" id="support">
+    <h2>🐱 FANBOX で応援してもらえると、とても嬉しいです</h2>
+    <p>nyaohtech のツールは、個人で開発・運営しています。無料で使えるものも、これからもできるだけ高品質に保ちつつ、たくさんの方に使ってもらえるようにしたい。そのためには、開発や検証を続けるための支えがどうしても必要です。</p>
+    <p>FANBOX での支援は<strong>月額 300 円から</strong>できます。いただいた支援は、新しいツールの開発、不具合の修正、ガイドの充実に大切に使わせていただきます。気が向いたときに、ぜひ応援してください。</p>
+    <div class="btns"><a class="btn btn--solid" href="https://nyaohtech.fanbox.cc/" target="_blank" rel="noopener">FANBOX で支援する</a></div>
+  </aside>
+
+  <section id="tools">
+    <h2>ツール</h2>
+    <ul class="cards">
+      <li class="card" data-pkg="com.nyaohtech.avatorperformancechecker">
+        <div class="card__thumb" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#333" stroke-width="2.6" stroke-linecap="round"><path d="M6 26V15M16 26V6M26 26V11"/></svg>
+        </div>
+        <div class="card__body">
+          <h3>Nt_AvatorPerformanceChecker</h3>
+          <span class="ver">v<span class="v">1.0.1</span></span><span class="dl" hidden></span>
+          <p class="lead">アバターの「重さ」を、見ながら作れるチェッカー。</p>
+          <ul>
+            <li>Scene ビューに、パフォーマンスランクを常時表示</li>
+            <li>PC / Mobile それぞれの全項目を、色分けして一覧表示</li>
+            <li>テクスチャの VRAM レポートと、アップロード容量の目安</li>
+            <li>日本語 / English の切り替え</li>
+          </ul>
+          <div class="meta">Unity メニュー: <code>nyaohtech → アバターInfo</code><br>アップロードされない非アクティブ / EditorOnly は集計しません。</div>
+        </div>
+      </li>
+      <li class="card" data-pkg="com.nyaohtech.simplematresize">
+        <div class="card__thumb" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#333" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12V5h7M27 12V5h-7M5 20v7h7M27 20v7h-7"/><rect x="11" y="11" width="10" height="10" rx="2"/></svg>
+        </div>
+        <div class="card__body">
+          <h3>Nt_SimpleMatResize</h3>
+          <span class="ver">v<span class="v">1.1.1</span></span><span class="dl" hidden></span>
+          <p class="lead">テクスチャを一括で小さくして、アバターをぐっと軽く。</p>
+          <ul>
+            <li>アバターを複製して縮小するので、元のアバターは変更されません</li>
+            <li>上限を 1024 / 2048 / 4096 から選べます</li>
+            <li>縮小したテクスチャとマテリアルを、新しいプレファブにまとめて保存</li>
+            <li>ノーマルマップや sRGB など、元のインポート設定を引き継ぎ</li>
+          </ul>
+          <div class="meta">Unity メニュー: <code>nyaohtech → アバター軽量化</code><br>出力先: <code>Assets/SimpleMatResize/Generated</code></div>
+        </div>
+      </li>
+      <li class="card card--wide" data-pkg="com.nyaohtech.avatorsupports">
+        <div class="card__thumb" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#333" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4l11 6v12l-11 6-11-6V10z"/><path d="M5 10l11 6 11-6M16 16v12"/></svg>
+        </div>
+        <div class="card__body">
+          <h3>Nt_AvatorSupports</h3>
+          <span class="ver">v<span class="v">1.0.0</span></span>
+          <p class="lead">上の 2 つを、まとめて一度に入れられる詰め合わせ。</p>
+          <ul>
+            <li>Nt_AvatorPerformanceChecker と Nt_SimpleMatResize を同時に導入</li>
+            <li>VCC で「Nt_AvatorSupports」の「＋」を押すだけ（これ自体に機能はありません）</li>
+          </ul>
+        </div>
+      </li>
+    </ul>
+    <div class="btns"><a class="btn" href="https://nyaohtech.raindrop.jp/products/nt_avatorsupports/">製品ページを見る（公式サイト）</a></div>
+  </section>
+
+  <section>
+    <h2>導入のしかた</h2>
+    <ol class="steps">
+      <li>上の「VCC に追加する」を押して、VCC の確認ダイアログでリポジトリを追加します。</li>
+      <li>VCC でアバタープロジェクトの「Manage Project」を開き、使いたいパッケージの「＋」を押します。</li>
+      <li>Unity を開くと、メニューバーの <code>nyaohtech</code> から使えます。</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>よくある質問</h2>
+    <details>
+      <summary>対応している Unity は？</summary>
+      <p>VRChat 推奨の Unity 2022.3 以降を想定しています。VRChat のアバタープロジェクトで使ってください。</p>
+    </details>
+    <details>
+      <summary>Nt_SimpleMatResize で元のアバターは壊れませんか？</summary>
+      <p>元のアバターは変更せず、非表示にするだけです。縮小した画像は別のファイルとして書き出すので、元の画像にも触りません。Ctrl+Z でも戻せます。</p>
+    </details>
+    <details>
+      <summary>Nt_AvatorPerformanceChecker の数値は VRChat の表示と同じですか？</summary>
+      <p>ランクの基準は VRChat 公式の値です。VRAM やアップロード容量は目安の概算なので、最終確認は VRChat SDK のビルド画面で行ってください。</p>
+    </details>
+  </section>
+</main>
+
+<div class="about">
+  <div class="container">
+    <img src="assets/logo.webp" alt="" width="190" height="190">
+    <div>
+      <h3>Nyaohtech</h3>
+      <p><strong>「一歩先の便利さを、もっと身近に。」</strong></p>
+      <p>nyaohtech（にゃおてく）は、デジタルツールの開発やクリエイティブなシステムインテグレーションを行う個人開発テックブランドです。</p>
+      <p><a class="btn" href="https://nyaohtech.raindrop.jp/about_nyaohtech/">Nyaohtechについて</a></p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <img src="assets/logo.webp" alt="" width="88" height="88">
+    <div>
+      <p class="tag">想像を、創造する。</p>
+      <ul>
+        <li><a href="https://nyaohtech.raindrop.jp/privacy-policy/">プライバシーポリシー</a></li>
+        <li><a href="https://nyaohtech.raindrop.jp/about_nyaohtech/">Nyaohtechについて</a></li>
+        <li><a href="https://nyaohtech.raindrop.jp/sitemap/">サイトマップ</a></li>
+        <li><a href="https://github.com/nyaohtech/nyaohtech-vpm">GitHub</a></li>
+      </ul>
+      <div class="copy">© Nyaohtech</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  const url = new URL('index.json', location.href).href;
+  document.getElementById('repoUrl').textContent = url;
+  document.getElementById('addLink').href = 'vcc://vpm/addRepo?url=' + encodeURIComponent(url);
+  document.getElementById('copyBtn').onclick = async (e) => {
+    const b = e.currentTarget, code = document.getElementById('repoUrl');
+    const done = (m) => { b.textContent = m; setTimeout(() => (b.textContent = 'URL をコピー'), 2400); };
+    try { await navigator.clipboard.writeText(url); done('コピーしました'); }
+    catch {
+      // Clipboard API が使えない環境でも、URL を選択状態にして Ctrl+C で取れるようにする
+      const r = document.createRange(); r.selectNodeContents(code);
+      const s = getSelection(); s.removeAllRanges(); s.addRange(r);
+      let ok = false; try { ok = document.execCommand('copy'); } catch {}
+      done(ok ? 'コピーしました' : '選択しました。Ctrl+C でコピーしてください');
+    }
+  };
+  // 公開中の最新バージョンを反映する（取得できなければ、書いてある値のまま）
+  fetch('index.json').then(r => r.json()).then(d => {
+    document.querySelectorAll('.card[data-pkg]').forEach(card => {
+      const p = d.packages[card.dataset.pkg];
+      if (!p) return;
+      const vs = Object.keys(p.versions);
+      card.querySelector('.v').textContent = vs[vs.length - 1];
+    });
+  }).catch(() => {});
+  // ダウンロード数(毎日更新)。取得できなければ表示しない
+  const countUp = (el, to) => {
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches || to === 0) { el.textContent = to.toLocaleString(); return; }
+    const t0 = performance.now(), ms = 1800;
+    const tick = (t) => {
+      const k = Math.min((t - t0) / ms, 1), e = k === 1 ? 1 : 1 - Math.pow(2, -10 * k); // easeOutExpo
+      el.textContent = Math.round(to * e).toLocaleString();
+      if (k < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
+  fetch('stats.json').then(r => r.json()).then(d => {
+    document.querySelectorAll('.card[data-pkg]').forEach(card => {
+      const n = d.packages[card.dataset.pkg], el = card.querySelector('.dl');
+      if (n == null || !el) return;
+      el.textContent = n.toLocaleString() + ' ダウンロード'; el.hidden = false;
+    });
+    document.getElementById('total').hidden = false;
+    countUp(document.getElementById('totalN'), d.total);
+  }).catch(() => {});
+</script>
+</body>
+</html>

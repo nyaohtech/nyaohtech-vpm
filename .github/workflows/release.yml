@@ -1,0 +1,92 @@
+name: Release package
+
+# [パッケージの公開]
+#   タグ名 = <パッケージ名>-<バージョン>（例: com.nyaohtech.simplematresize-1.1.0）をpushすると、
+#   そのパッケージのzipをReleaseに添付し、リスティング(index.json)をGitHub Pagesへ公開する。
+# [紹介ページだけの更新]
+#   main に Website/ の変更をpushすると、公開済みの index.json はそのままに、ページだけを差し替える。
+#   毎日(schedule)も同じ処理を回し、stats.json(ダウンロード数)を更新する。
+on:
+  push:
+    tags:
+      - 'com.nyaohtech.*-[0-9]*'
+    branches:
+      - main
+    paths:
+      - 'Website/**'
+      - '.github/workflows/release.yml'
+  schedule:
+    - cron: '17 3 * * *'   # ダウンロード数(stats.json)を毎日更新
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build zips and listing
+        run: |
+          PAGES=$(python3 -c "import json;print(json.load(open('source.json'))['pagesUrl'])")
+          python3 scripts/build.py --previous "$PAGES/index.json"
+
+      - name: Create release with the tagged package zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ZIP="dist/${GITHUB_REF_NAME}.zip"
+          test -f "$ZIP" || { echo "::error::$ZIP not found. Tag must match package.json name-version."; exit 1; }
+          gh release create "$GITHUB_REF_NAME" "$ZIP" --title "$GITHUB_REF_NAME" --generate-notes
+
+      - name: Collect download counts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/stats.py
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: Website
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+  site:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # 現行バージョンはタグ時と同じ手順で作り直し、旧バージョンは公開中の一覧から引き継ぐ(zip の sha は CI 上で再現される)
+      - name: Build listing
+        run: |
+          PAGES=$(python3 -c "import json;print(json.load(open('source.json'))['pagesUrl'])")
+          python3 scripts/build.py --previous "$PAGES/index.json"
+          python3 -c "import json;d=json.load(open('Website/index.json'));assert d['packages'], 'empty listing'"
+
+      - name: Collect download counts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/stats.py
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: Website
+      - id: deploy
+        uses: actions/deploy-pages@v4
