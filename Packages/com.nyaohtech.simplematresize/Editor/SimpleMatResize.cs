@@ -39,9 +39,12 @@ namespace SimpleMatResize
         {
             EnsureFolder(OutRoot); // 親が無いと GenerateUniqueAssetPath が空文字を返すため先に作る
             string dir = AssetDatabase.GenerateUniqueAssetPath($"{OutRoot}/{Safe(root.name)}_{max}");
-            string texDir = dir + "/Textures", matDir = dir + "/Materials";
+            // テクスチャとマテリアルは共有フォルダに置き、変換済みなら再利用する(同じ設定で何度実行しても増えない)
+            string texDir = OutRoot + "/_Shared/Textures", matDir = OutRoot + "/_Shared/Materials";
             EnsureFolder(texDir);
             EnsureFolder(matDir);
+            EnsureFolder(dir);
+            reusedTex = reusedMat = madeTex = madeMat = 0;
             var texMap = new Dictionary<Texture, Texture>();
             var matMap = new Dictionary<Material, Material>();
 
@@ -79,15 +82,38 @@ namespace SimpleMatResize
 
             Selection.activeGameObject = clone;
             EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<GameObject>(prefab));
-            Debug.Log($"{Tag}完了: テクスチャ {texMap.Count} 枚 / マテリアル {matMap.Count} 個 を生成 -> {dir}");
+            Debug.Log($"{Tag}完了: テクスチャ 新規 {madeTex} 枚・再利用 {reusedTex} 枚 / マテリアル 新規 {madeMat} 個・再利用 {reusedMat} 個。プレファブ -> {dir}");
         }
+
+        static int reusedTex, reusedMat, madeTex, madeMat;
+
+        // 変換結果に埋め込む目印。元アセットのGUID・内容のハッシュ・目標サイズが同じなら、同じ結果とみなす
+        static string KeyOf(string srcPath, int size) =>
+            $"nt_smr1;{AssetDatabase.AssetPathToGUID(srcPath)};{AssetDatabase.GetAssetDependencyHash(srcPath)};{size}";
+
+        static bool IsDone(string outPath, string key) =>
+            File.Exists(outPath) && AssetImporter.GetAtPath(outPath) is AssetImporter imp && imp.userData == key;
 
         static Material ShrinkMaterial(Material src, int max, string texDir, string matDir,
             Dictionary<Texture, Texture> texMap, Dictionary<Material, Material> matMap)
         {
             if (matMap.TryGetValue(src, out var done)) return done;
 
-            var copy = new Material(src) { name = src.name + "_Resized" };
+            // アセットでないマテリアル(シーン内のみ)は、これまでどおり毎回作る
+            string srcMatPath = AssetDatabase.GetAssetPath(src);
+            string matKey = null, matOut = null;
+            if (!string.IsNullOrEmpty(srcMatPath))
+            {
+                matKey = KeyOf(srcMatPath, max);
+                matOut = $"{matDir}/{Safe(src.name)}_Resized{max}_{AssetDatabase.AssetPathToGUID(srcMatPath).Substring(0, 8)}.mat";
+                if (IsDone(matOut, matKey))
+                {
+                    var prev = AssetDatabase.LoadAssetAtPath<Material>(matOut);
+                    if (prev != null) { reusedMat++; return matMap[src] = prev; }
+                }
+            }
+
+            var copy = new Material(src) { name = matOut != null ? Path.GetFileNameWithoutExtension(matOut) : src.name + "_Resized" };
             bool changed = false;
             foreach (var prop in src.GetTexturePropertyNames())
             {
@@ -105,7 +131,25 @@ namespace SimpleMatResize
                 Object.DestroyImmediate(copy);
                 return matMap[src] = src;
             }
-            AssetDatabase.CreateAsset(copy, AssetDatabase.GenerateUniqueAssetPath($"{matDir}/{Safe(copy.name)}.mat"));
+            madeMat++;
+            if (matOut == null)
+            {
+                AssetDatabase.CreateAsset(copy, AssetDatabase.GenerateUniqueAssetPath($"{matDir}/{Safe(copy.name)}.mat"));
+                return matMap[src] = copy;
+            }
+            var existing = AssetDatabase.LoadAssetAtPath<Material>(matOut);
+            if (existing != null)
+            {
+                // 元マテリアルが変わっていた場合: 同じアセット(GUID)を上書きして、以前の変換結果からの参照を保つ
+                EditorUtility.CopySerialized(copy, existing);
+                Object.DestroyImmediate(copy);
+                EditorUtility.SetDirty(existing);
+                copy = existing;
+            }
+            else AssetDatabase.CreateAsset(copy, matOut);
+            AssetDatabase.SaveAssets();
+            var imp = AssetImporter.GetAtPath(matOut);
+            if (imp != null) { imp.userData = matKey; imp.SaveAndReimport(); }
             return matMap[src] = copy;
         }
 
@@ -121,6 +165,15 @@ namespace SimpleMatResize
             int cur = Mathf.Max(src.width, src.height);
             int target = TargetSize(cur, max);
             if (target >= cur) return src;
+
+            // 同じ元テクスチャ・同じ内容・同じサイズで変換済みなら、書き出さずにそれを使う
+            string key = KeyOf(srcPath, target);
+            string fixedOut = $"{texDir}/{Safe(Path.GetFileNameWithoutExtension(srcPath))}_{target}_{AssetDatabase.AssetPathToGUID(srcPath).Substring(0, 8)}.png";
+            if (IsDone(fixedOut, key))
+            {
+                var prev = AssetDatabase.LoadAssetAtPath<Texture>(fixedOut);
+                if (prev != null) { reusedTex++; return cache[src] = prev; }
+            }
             float k = (float)target / cur;
             int w = Mathf.Max(1, Mathf.RoundToInt(src.width * k));
             int h = Mathf.Max(1, Mathf.RoundToInt(src.height * k));
@@ -151,8 +204,7 @@ namespace SimpleMatResize
                 dst.SetPixels32(Downsample(raw.GetPixels32(), raw.width, raw.height, w, h));
                 dst.Apply();
 
-                string outPath = AssetDatabase.GenerateUniqueAssetPath(
-                    $"{texDir}/{Safe(Path.GetFileNameWithoutExtension(srcPath))}_{target}.png");
+                string outPath = fixedOut; // 内容が変わっていた場合は同名を上書きして最新にする
                 File.WriteAllBytes(outPath, dst.EncodeToPNG());
                 AssetDatabase.ImportAsset(outPath, ImportAssetOptions.ForceSynchronousImport);
 
@@ -167,11 +219,12 @@ namespace SimpleMatResize
                     platform.maxTextureSize = target;
                     outImp.SetPlatformTextureSettings(platform);
                     outImp.maxTextureSize = target;
+                    outImp.userData = key;
                     outImp.SaveAndReimport();
                 }
 
                 var loaded = AssetDatabase.LoadAssetAtPath<Texture>(outPath);
-                if (loaded != null) cache[src] = loaded;
+                if (loaded != null) { cache[src] = loaded; madeTex++; }
             }
             finally
             {
