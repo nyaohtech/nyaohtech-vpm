@@ -1,0 +1,35 @@
+name: Release unitypackage
+
+# [BOOTH 配布用の .unitypackage]
+#   タグ名 = unitypackage-<バージョン>（例: unitypackage-1.0.0）をpushすると、
+#   .unitypackage を作ってReleaseに添付する。BOOTH へのアップロードは手作業。
+#   バージョンは scripts/unitypackage.json と同じにする。
+on:
+  push:
+    tags:
+      - 'unitypackage-[0-9]*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches the version
+        run: |
+          V=$(python3 -c "import json;print(json.load(open('scripts/unitypackage.json'))['version'])")
+          test "unitypackage-$V" = "$GITHUB_REF_NAME" || { echo "::error::tag $GITHUB_REF_NAME != unitypackage-$V"; exit 1; }
+
+      - name: Build
+        run: python3 scripts/make_unitypackage.py
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.unitypackage \
+            --title "Nt_AvatorSupports (unitypackage) ${GITHUB_REF_NAME#unitypackage-}" \
+            --notes-file CHANGELOG.md
