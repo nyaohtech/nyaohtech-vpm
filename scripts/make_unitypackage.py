@@ -1,10 +1,8 @@
-"""VCC を使わない人向けに、まとめ版の .unitypackage を作る。
+"""BOOTH 配布用の、VCC への導入案内の .unitypackage を作る。
 
-  python scripts/make_unitypackage.py        # dist/Nt_AvatorSupports_v<バージョン>.unitypackage
+  python scripts/make_unitypackage.py        # dist/Nt_AvatorSupports_Setup_v<バージョン>.unitypackage
 
-- チェッカーと軽量化の 2 つを Assets/nyaohtech/ に入れる。
-- VCC 版(VPM パッケージ)と同じプロジェクトに入っても衝突しないよう、
-  GUID と asmdef の名前を VCC 版とは別にし、VCC 版が入っているときは、こちらを無効にする。
+- ツール本体は入れない。VCC にリポジトリを追加するウィンドウと README だけ。
 - 同じ内容から、いつも同じファイルができる(日時・GUID を固定している)。
 """
 import gzip
@@ -12,7 +10,6 @@ import hashlib
 import io
 import json
 import os
-import re
 import sys
 import tarfile
 
@@ -20,13 +17,9 @@ BASE = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 PKG_ROOT = os.path.join(BASE, "Packages")
 DIST = os.path.join(BASE, "dist")
 
-# (VPM のパッケージ名, Assets 内のフォルダ名, 衝突を避けるための define)
-TOOLS = [
-    ("com.nyaohtech.avatorperformancechecker", "Nt_AvatorPerformanceChecker", "NT_VPM_AVATORPERFORMANCECHECKER"),
-    ("com.nyaohtech.simplematresize", "Nt_SimpleMatResize", "NT_VPM_SIMPLEMATRESIZE"),
-]
-ROOT = "Assets/nyaohtech"
-NAME = "Nt_AvatorSupports"
+ROOT = "Assets/nyaohtech/Nt_AvatorSupports_Setup"
+NAME = "Nt_AvatorSupports_Setup"
+FILES = os.path.join(BASE, "scripts", "unitypackage_files")
 
 
 def guid(path):
@@ -51,14 +44,6 @@ def lf(data):
     return data.replace(b"\r\n", b"\n")
 
 
-def asmdef_for_unitypackage(raw, pkg_name, define):
-    d = json.loads(raw.decode("utf-8-sig"))
-    d["name"] = d["name"] + ".Unitypackage"          # VCC 版のアセンブリ名と重ならないように
-    d["versionDefines"] = [{"name": pkg_name, "expression": "", "define": define}]
-    d["defineConstraints"] = ["!" + define]          # VCC 版が入っているときは、こちらをコンパイルしない
-    return (json.dumps(d, indent=4, ensure_ascii=False) + "\n").encode("utf-8")
-
-
 def read_text(path):
     with open(path, "rb") as f:
         return lf(f.read())
@@ -74,27 +59,17 @@ def main():
         for i in range(2, len(parts)):
             entries.setdefault("/".join(parts[:i]), ("folder", None))
 
-    for pkg, folder, define in TOOLS:
-        src = os.path.join(PKG_ROOT, pkg, "Editor")
-        for name in sorted(os.listdir(src)):
-            if name.endswith(".meta"):
-                continue
-            raw = read_text(os.path.join(src, name))
-            dest = f"{ROOT}/{folder}/Editor/{name}"
-            add_dirs(dest)
-            if name.endswith(".asmdef"):
-                entries[dest] = ("asmdef", asmdef_for_unitypackage(raw, pkg, define))
-            elif name.endswith(".cs"):
-                entries[dest] = ("cs", raw)
-            else:
-                entries[dest] = ("other", raw)
-
-    for fname, src in (("README.txt", os.path.join(BASE, "scripts", "unitypackage_files", "README.txt")),
-                       ("CHANGELOG.txt", os.path.join(BASE, "CHANGELOG.md"))):   # 更新履歴は、リポジトリの CHANGELOG.md と同じもの
-        dest = f"{ROOT}/{fname}"
+    asmdef = {"name": "Nyaohtech.Setup.Editor", "rootNamespace": "Nyaohtech.Setup", "includePlatforms": ["Editor"]}
+    src = [
+        (f"{ROOT}/Editor/NtSetup.cs", "cs", read_text(os.path.join(FILES, "NtSetup.cs"))),
+        (f"{ROOT}/Editor/Nyaohtech.Setup.Editor.asmdef", "asmdef", (json.dumps(asmdef, indent=4) + chr(10)).encode("utf-8")),
+        (f"{ROOT}/README.txt", "text", read_text(os.path.join(FILES, "README.txt"))),
+    ]
+    for dest, kind, data in src:
         add_dirs(dest)
-        entries[dest] = ("text", read_text(src))
-    entries[ROOT] = ("folder", None)
+        entries[dest] = (kind, data)
+    for d in ("Assets/nyaohtech", ROOT):
+        entries[d] = ("folder", None)
 
     os.makedirs(DIST, exist_ok=True)
     out = os.path.join(DIST, f"{NAME}_v{version}.unitypackage")

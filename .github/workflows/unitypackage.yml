@@ -1,6 +1,6 @@
 name: Release unitypackage
 
-# [BOOTH 配布用の .unitypackage]
+# [BOOTH 配布用の、VCC 導入案内の .unitypackage]
 #   タグ名 = unitypackage-<バージョン>（例: unitypackage-1.0.0）をpushすると、
 #   .unitypackage を作ってReleaseに添付する。BOOTH へのアップロードは手作業。
 #   バージョンは scripts/unitypackage.json と同じにする。
@@ -31,5 +31,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release create "$GITHUB_REF_NAME" dist/*.unitypackage \
-            --title "Nt_AvatorSupports (unitypackage) ${GITHUB_REF_NAME#unitypackage-}" \
+            --title "Nt_AvatorSupports Setup (unitypackage) ${GITHUB_REF_NAME#unitypackage-}" \
             --notes-file CHANGELOG.md

@@ -1,14 +1,18 @@
 # 更新履歴
 
-nyaohtech のツール（VPM パッケージと、BOOTH 配布の .unitypackage）の、更新の記録です。新しいものが上です。
+nyaohtech のツール（VPM パッケージと、BOOTH 配布の導入用 .unitypackage）の、更新の記録です。新しいものが上です。
 
-## Nt_AvatorSupports（.unitypackage 版）
+## Nt_AvatorSupports 導入用 .unitypackage（BOOTH）
 
 ### 1.0.0（2026年11月）
-- 初版です。Nt_AvatorPerformanceChecker 1.0.2 と、Nt_SimpleMatResize 1.1.3 が入っています。
-- VCC 版（VPM パッケージ）が入っているプロジェクトでは、この版は自動で無効になります。VCC 版だけが動きます。
+- 初版です。ツール本体は入っていません。VCC にリポジトリを追加するための案内ウィンドウだけが入っています。
+- 更新は VCC から行います。この .unitypackage を入れ直す必要はありません。
 
 ## Nt_SimpleMatResize
+
+### 1.1.4（2026年11月）
+- 一部のアバターで「Object reference not set to an instance of an object」が出て、変換が止まることがある問題を直しました。
+- Cubemap など、画素を読めないテクスチャは、元のまま使います。読めなかったときは、止まらずに、Console に警告を出して次へ進みます。
 
 ### 1.1.3（2026年10月）
 - 同じ変換をくり返しても、ファイルが増えないようにしました。前に変換した画像とマテリアルは、使い回します。

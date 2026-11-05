@@ -1,41 +1,34 @@
-Nt_AvatorSupports（.unitypackage 版）
+Nt_AvatorSupports 導入用パッケージ
 
-VRChat のアバター制作で使う、2 つの Unity 用ツールの詰め合わせです。
-
-  Nt_AvatorPerformanceChecker  アバターの重さ（パフォーマンスランク、VRAM など）を確認します。
-  Nt_SimpleMatResize           アバターを複製して、テクスチャを一括で小さくします。元のアバターは変更しません。
+この .unitypackage には、ツール本体は入っていません。
+VCC（VRChat Creator Companion）に、nyaohtech のリポジトリを追加するための案内だけが入っています。
 
 ■ 使いかた
-  Unity のメニューバーに「nyaohtech」が増えます。
-    nyaohtech → アバターInfo     チェッカー（Scene ビューの表示、ダッシュボード、詳細表示、設定）
-    nyaohtech → アバター軽量化   高 (1024) / 中 (2048) / 低 (4096)
-  くわしい使いかたは、使い方ガイドをご覧ください。
-    https://nyaohtech.raindrop.jp/manual/vpm/
-
-■ VCC をお使いの方へ
-  VCC（VRChat Creator Companion）から入れると、更新が自動で通知されて、楽です。
-    https://nyaohtech.github.io/nyaohtech-vpm/
-  同じプロジェクトに VCC 版と、この .unitypackage 版の両方が入っているときは、
-  VCC 版だけが動きます（この .unitypackage 版は、自動で無効になります）。
-  VCC 版に移るときは、先に、このフォルダ（Assets/nyaohtech）を削除してください。
+  1. この .unitypackage を、Unity のプロジェクトにインポートします。
+  2. 開いたウィンドウの「VCC で追加する」を押します（VCC が開きます）。
+     開かないときは、「URL をコピー」を押して、VCC の Settings → Packages → Add Repository に貼ります。
+       https://nyaohtech.github.io/nyaohtech-vpm/index.json
+  3. VCC の「Manage Project」で、Nt_AvatorSupports の「＋」を押します。
+  4. Unity に戻ると、メニューバーに「nyaohtech」が増えます。
+       nyaohtech → アバターInfo     アバターの重さ（パフォーマンスランク、VRAM など）の確認
+       nyaohtech → アバター軽量化   アバターを複製して、テクスチャを一括で小さくする
 
 ■ 更新するとき
-  新しい .unitypackage を、同じプロジェクトにインポートすると、上書きされます。
-  更新の内容は、CHANGELOG.txt をご覧ください。
+  VCC のプロジェクトの画面に、更新が出ます。この .unitypackage を入れ直す必要はありません。
 
-■ 削除するとき
-  Assets/nyaohtech フォルダを削除してください。
-  Nt_SimpleMatResize が作った Assets/SimpleMatResize は、別に残ります（不要なら削除してください）。
+■ 案内を消すとき
+  メニューの「nyaohtech → 導入(VCCに追加)」から開いて、「このセットアップを削除」を押します。
+  導入したツールには影響しません。
 
-■ ご注意
-  個人が開発した非公式のツールです。BOOTH（pixiv Inc.）、VRChat Inc.、Unity Technologies とは関係がありません。
-  ご利用は自己責任でお願いします。
-  情報の取り扱いは、次のページに書いています。
-    https://nyaohtech.raindrop.jp/product-privacy/
+■ くわしい使いかた
+  https://nyaohtech.raindrop.jp/manual/vpm/
+
+■ プライバシー
+  https://nyaohtech.raindrop.jp/product-privacy/
+
+■ 注意
+  VRChat 公式のツールではありません。
 
 ■ 連絡先・応援
-  X: https://x.com/nyaoh_tech
-  このツールを気に入っていただけたら、FANBOX での応援をいただけると、励みになります（月額300円から）。
-    https://nyaohtech.fanbox.cc/
-
-nyaohtech
+  X: @nyaoh_tech
+  FANBOX で応援してもらえると、続ける励みになります（月額300円から）。

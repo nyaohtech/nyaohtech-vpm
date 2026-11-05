@@ -158,7 +158,8 @@ namespace SimpleMatResize
             if (cache.TryGetValue(src, out var done)) return done;
             cache[src] = src; // 対象外・失敗は元のまま使う。成功時だけ末尾で差し替える
 
-            // RenderTexture や組み込みテクスチャはImporterが無いので対象外
+            // RenderTexture・組み込み・Cubemap・配列テクスチャなどは、画素を読めないので対象外
+            if (!(src is Texture2D)) return src;
             string srcPath = AssetDatabase.GetAssetPath(src);
             if (string.IsNullOrEmpty(srcPath) || !(AssetImporter.GetAtPath(srcPath) is TextureImporter srcImp)) return src;
 
@@ -189,7 +190,12 @@ namespace SimpleMatResize
                     return src;
                 }
                 AssetDatabase.ImportAsset(tmp, ImportAssetOptions.ForceSynchronousImport);
-                var tmpImp = (TextureImporter)AssetImporter.GetAtPath(tmp);
+                var tmpImp = AssetImporter.GetAtPath(tmp) as TextureImporter;
+                if (tmpImp == null)
+                {
+                    Debug.LogWarning(Tag + "読み込めないためスキップ: " + srcPath);
+                    return src;
+                }
                 tmpImp.textureType = TextureImporterType.Default; // ノーマルマップ変換を外して生データで読む
                 tmpImp.isReadable = true;
                 tmpImp.mipmapEnabled = false;
@@ -200,6 +206,11 @@ namespace SimpleMatResize
                 tmpImp.SaveAndReimport();
 
                 var raw = AssetDatabase.LoadAssetAtPath<Texture2D>(tmp);
+                if (raw == null)
+                {
+                    Debug.LogWarning(Tag + "読み込めないためスキップ: " + srcPath);
+                    return src;
+                }
                 dst = new Texture2D(w, h, TextureFormat.RGBA32, false);
                 dst.SetPixels32(Downsample(raw.GetPixels32(), raw.width, raw.height, w, h));
                 dst.Apply();
