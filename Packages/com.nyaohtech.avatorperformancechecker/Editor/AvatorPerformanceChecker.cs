@@ -374,19 +374,16 @@ namespace AvatorPerformanceChecker
 
             if (Prefs.IncludeChildren)
             {
-                foreach (var s in go.GetComponentsInChildren<SkinnedMeshRenderer>(true))
+                // 全体集計と同じく、EditorOnly・非アクティブは配下ごと除く
+                ForEachUploaded(go, ch =>
                 {
-                    if (s.gameObject == go || !s.sharedMesh) continue;
-                    d.TotalTris += Tris(s.sharedMesh);
-                    d.TotalMats += s.sharedMaterials.Length;
-                }
-                foreach (var m in go.GetComponentsInChildren<MeshRenderer>(true))
-                {
-                    var f = m.GetComponent<MeshFilter>();
-                    if (m.gameObject == go || !f || !f.sharedMesh) continue;
-                    d.TotalTris += Tris(f.sharedMesh);
-                    d.TotalMats += m.sharedMaterials.Length;
-                }
+                    if (ch == go) return;
+                    var s = ch.GetComponent<SkinnedMeshRenderer>();
+                    if (s && s.sharedMesh) { d.TotalTris += Tris(s.sharedMesh); d.TotalMats += s.sharedMaterials.Length; }
+                    var f = ch.GetComponent<MeshFilter>();
+                    var m = ch.GetComponent<MeshRenderer>();
+                    if (m && f && f.sharedMesh) { d.TotalTris += Tris(f.sharedMesh); d.TotalMats += m.sharedMaterials.Length; }
+                });
             }
 
             d.SelfVramBytes = ObjectVram(go);
