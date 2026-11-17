@@ -476,12 +476,12 @@ namespace Nyaohtech.MLVCFileView
             _list = CreateList();
             main.Add(_list);
 
-            // 何もない所の右クリックは、今開いているフォルダに対する作成メニュー
+            // 何もない所の右クリックは、今開いているフォルダに対する標準メニュー
             main.AddManipulator(new ContextualMenuManipulator(e =>
             {
                 if (e.menu.MenuItems().Count > 0) return;
                 if (_tab != (int)Tab.Files) return;
-                FvAssetMenu.Add(e.menu, _cwd, e.mousePosition, OnProjectChanged);
+                FvAssetMenu.Show(_cwd, e.mousePosition);
             }));
 
             _empty = new Label(""); _empty.AddToClassList("fv-empty"); _empty.pickingMode = PickingMode.Ignore;
@@ -675,18 +675,7 @@ namespace Nyaohtech.MLVCFileView
             {
                 if (!(ve.userData is FvEntry en)) return;
                 Select(en);
-                e.menu.AppendAction("開く", _ => Activate(en));
-                e.menu.AppendAction("Project ウィンドウで表示", _ => Ping(en));
-                e.menu.AppendAction("エクスプローラーで表示", _ => EditorUtility.RevealInFinder(FvPaths.Abs(en.Path)));
-                e.menu.AppendAction("パスをコピー", _ => EditorGUIUtility.systemCopyBuffer = en.Path);
-                string root = FvPaths.RootOrSelf(en.Path);
-                if (root.Length > 0)
-                {
-                    e.menu.AppendSeparator();
-                    if (FvTouched.IsTouched(root)) e.menu.AppendAction("未開封に戻す（" + root + "）", _ => FvTouched.Unmark(root));
-                    else e.menu.AppendAction("既読にする（" + root + "）", _ => FvTouched.Mark(root));
-                }
-                FvAssetMenu.Add(e.menu, en.Path, e.mousePosition, OnProjectChanged);
+                FvAssetMenu.Show(en.Path, e.mousePosition);
             }));
         }
 
