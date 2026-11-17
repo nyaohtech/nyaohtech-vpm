@@ -1,0 +1,316 @@
+/* MLVCFileView — 横長ドッキング向けコンパクトレイアウト
+   色は Unity エディタ本体の変数（--unity-colors-*）だけを使う。ダーク／ライトのどちらのスキンでも Unity と同じ色になる。
+   例外は「未開封」「役割バッジ」の意味を持つ色と、選択タブの下線のみ。 */
+
+.fv-root {
+    flex-grow: 1;
+    background-color: var(--unity-colors-default-background);
+    color: var(--unity-colors-default-text);
+    font-size: 12px;
+}
+
+/* ───── ツールバー（1 行） ───── */
+.fv-toolbar {
+    flex-direction: row;
+    align-items: center;
+    height: 30px;
+    flex-shrink: 0;
+    padding: 0 6px;
+    background-color: var(--unity-colors-toolbar-background);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--unity-colors-toolbar-border);
+}
+.fv-spacer { flex-grow: 1; flex-shrink: 1; min-width: 4px; }
+
+.fv-tabs { flex-direction: row; height: 30px; flex-shrink: 0; }
+.fv-tab {
+    flex-direction: row;
+    align-items: center;
+    padding: 0 10px;
+    color: var(--unity-colors-label-text);
+    opacity: 0.7;
+    -unity-font-style: bold;
+    transition-property: opacity;
+    transition-duration: 0.15s;
+}
+.fv-tab:hover { opacity: 1; }
+.fv-tab--on { color: var(--unity-colors-default-text); opacity: 1; }
+.fv-tab-count {
+    margin-left: 5px;
+    padding: 0 6px;
+    border-radius: 8px;
+    background-color: var(--unity-colors-button-background);
+    color: var(--unity-colors-default-text);
+    font-size: 10px;
+    -unity-font-style: normal;
+}
+.fv-tab--on .fv-tab-count { background-color: var(--unity-colors-highlight-background); }
+.fv-tab-indicator {
+    position: absolute;
+    bottom: 0;
+    height: 2px;
+    left: 0;
+    width: 40px;
+    border-radius: 1px;
+    background-color: #3A8EDB;
+    transition-property: left, width;
+    transition-duration: 0.2s;
+    transition-timing-function: ease-out-cubic;
+}
+
+.fv-search-wrap { width: 150px; min-width: 60px; flex-shrink: 1; height: 22px; margin-left: 6px; }
+.fv-search { flex-grow: 1; margin: 0; height: 22px; }
+.fv-search .unity-base-text-field__input {
+    height: 22px;
+    padding: 0 8px;
+    margin: 0;
+    border-radius: 11px;
+    border-width: 1px;
+    border-color: var(--unity-colors-input_field-border);
+    background-color: var(--unity-colors-input_field-background);
+    color: var(--unity-colors-default-text);
+    -unity-text-align: middle-left;
+    transition-property: border-color;
+    transition-duration: 0.12s;
+}
+.fv-search .unity-base-text-field__input:focus { border-color: var(--unity-colors-highlight-background); }
+.fv-search-hint {
+    position: absolute;
+    left: 10px; top: 0; bottom: 0;
+    -unity-text-align: middle-left;
+    color: var(--unity-colors-label-text);
+    opacity: 0.5;
+}
+
+.fv-btn {
+    height: 22px;
+    padding: 0 9px;
+    margin: 0 0 0 4px;
+    border-radius: 11px;
+    background-color: var(--unity-colors-button-background);
+    border-width: 1px;
+    border-color: var(--unity-colors-button-border);
+    color: var(--unity-colors-default-text);
+    -unity-text-align: middle-center;
+    flex-shrink: 0;
+    transition-property: background-color;
+    transition-duration: 0.12s;
+}
+.fv-btn:hover { background-color: var(--unity-colors-button-background-hover); }
+.fv-btn:active { background-color: var(--unity-colors-button-background-pressed); }
+
+.fv-sort { margin: 0 0 0 4px; width: 92px; flex-shrink: 0; }
+.fv-sort .unity-base-popup-field__input,
+.fv-sort .unity-base-field__input {
+    height: 22px;
+    margin: 0;
+    border-radius: 11px;
+    border-width: 1px;
+    border-color: var(--unity-colors-button-border);
+    background-color: var(--unity-colors-button-background);
+    color: var(--unity-colors-default-text);
+    padding: 0 8px;
+}
+.fv-sort .unity-base-popup-field__input:hover { background-color: var(--unity-colors-button-background-hover); }
+
+.fv-size { width: 80px; margin: 0 0 0 6px; flex-shrink: 0; }
+.fv-size .unity-base-slider__drag-container { height: 14px; }
+.fv-size .unity-base-slider__tracker { background-color: var(--unity-colors-input_field-border); height: 3px; border-radius: 2px; border-width: 0; }
+.fv-size .unity-base-slider__dragger { background-color: var(--unity-colors-button-background-hover); width: 10px; height: 10px; border-radius: 5px; border-width: 0; }
+
+/* ───── 本体（左リスト + 右内容） ───── */
+.fv-split { flex-grow: 1; }
+.fv-split .unity-two-pane-split-view__dragline { background-color: var(--unity-colors-window-border); }
+.fv-split .unity-two-pane-split-view__dragline-anchor { background-color: transparent; }
+
+.fv-left { background-color: var(--unity-colors-default-background); min-width: 120px; }
+.fv-left-header {
+    flex-direction: row;
+    height: 24px;
+    flex-shrink: 0;
+    padding: 3px 6px 0 6px;
+}
+.fv-seg {
+    flex-grow: 1;
+    height: 20px;
+    margin: 0 2px 0 0;
+    border-radius: 10px;
+    -unity-text-align: middle-center;
+    color: var(--unity-colors-label-text);
+    opacity: 0.7;
+    transition-property: background-color, opacity;
+    transition-duration: 0.12s;
+}
+.fv-seg:hover { opacity: 1; }
+.fv-seg--on { background-color: var(--unity-colors-button-background); color: var(--unity-colors-default-text); opacity: 1; }
+
+.fv-main { flex-grow: 1; flex-shrink: 1; min-width: 100px; }
+.fv-crumbs {
+    flex-direction: row;
+    align-items: center;
+    height: 24px;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+.fv-crumb {
+    padding: 2px 6px;
+    border-radius: 6px;
+    color: var(--unity-colors-label-text);
+    transition-property: background-color;
+    transition-duration: 0.1s;
+}
+.fv-crumb:hover { background-color: var(--unity-colors-highlight-background-hover); color: var(--unity-colors-default-text); }
+.fv-crumb--last { color: var(--unity-colors-default-text); -unity-font-style: bold; }
+.fv-crumb-sep { color: var(--unity-colors-label-text); opacity: 0.5; margin: 0 1px; }
+
+/* ───── リスト共通（スクロールバーを細く） ───── */
+.fv-list { flex-grow: 1; }
+.fv-list .unity-scroll-view__content-viewport { margin: 0; }
+.fv-list .unity-scroller--vertical { width: 8px; }
+.fv-list .unity-base-slider__drag-container { margin: 0; }
+.fv-list .unity-base-slider__dragger { background-color: var(--unity-colors-button-background); border-radius: 4px; border-width: 0; }
+.fv-list .unity-base-slider__tracker { background-color: transparent; border-width: 0; }
+.fv-list .unity-scroller__low-button,
+.fv-list .unity-scroller__high-button { display: none; }
+
+/* ───── フォルダツリー ───── */
+.fv-trow {
+    flex-direction: row;
+    align-items: center;
+    height: 22px;
+    margin: 0 4px;
+    border-radius: 4px;
+}
+.fv-trow:hover { background-color: var(--unity-colors-highlight-background-hover); }
+.fv-trow--sel { background-color: var(--unity-colors-highlight-background); }
+.fv-trow--sel:hover { background-color: var(--unity-colors-highlight-background); }
+.fv-tarrow { width: 14px; color: var(--unity-colors-label-text); opacity: 0.7; -unity-text-align: middle-center; font-size: 10px; }
+.fv-tarrow:hover { opacity: 1; }
+.fv-ticon { width: 16px; height: 16px; margin-right: 4px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; }
+.fv-tname { flex-grow: 1; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--unity-colors-default-text); }
+.fv-tdot { width: 6px; height: 6px; margin: 0 6px; border-radius: 3px; background-color: #FF6B9D; flex-shrink: 0; }
+
+/* ───── 取り込み履歴 ───── */
+.fv-hist-row {
+    flex-direction: row;
+    align-items: center;
+    height: 44px;
+    padding: 0 6px;
+    margin: 0 4px;
+    border-radius: 6px;
+}
+.fv-hist-row:hover { background-color: var(--unity-colors-highlight-background-hover); }
+.fv-hist-thumb {
+    width: 34px; height: 34px;
+    border-radius: 6px;
+    background-color: var(--unity-colors-input_field-background);
+    margin-right: 8px;
+    flex-shrink: 0;
+    -unity-background-scale-mode: scale-and-crop;
+}
+.fv-hist-text { flex-grow: 1; flex-shrink: 1; overflow: hidden; }
+.fv-hist-name { color: var(--unity-colors-default-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fv-hist-sub { color: var(--unity-colors-label-text); opacity: 0.65; font-size: 10px; overflow: hidden; white-space: nowrap; }
+.fv-hist-row--dim .fv-hist-name { opacity: 0.55; }
+
+/* ───── タイル ───── */
+.fv-row { flex-direction: row; padding: 0 6px; }
+.fv-card {
+    margin: 3px;
+    border-radius: 6px;
+    background-color: var(--unity-colors-window-background);
+    border-width: 1px;
+    border-color: var(--unity-colors-default-border);
+    overflow: hidden;
+    transition-property: background-color, border-color;
+    transition-duration: 0.12s;
+}
+.fv-card:hover { background-color: var(--unity-colors-button-background); }
+.fv-card--sel { background-color: var(--unity-colors-highlight-background); border-color: var(--unity-colors-highlight-background); }
+.fv-card--sel:hover { background-color: var(--unity-colors-highlight-background); }
+.fv-card--new { border-color: #FF6B9D; }
+.fv-card--new:hover { border-color: #FF8FB5; }
+.fv-card--new.fv-card--sel { border-color: #FF6B9D; }
+
+.fv-thumb-wrap { background-color: var(--unity-colors-input_field-background); }
+.fv-thumb { -unity-background-scale-mode: scale-and-crop; }
+.fv-thumb--icon { -unity-background-scale-mode: scale-to-fit; margin: 6px; }
+
+.fv-badges { position: absolute; left: 3px; top: 3px; flex-direction: row; }
+.fv-badge {
+    padding: 0 6px;
+    margin-right: 3px;
+    border-radius: 7px;
+    font-size: 9px;
+    -unity-font-style: bold;
+    color: #FFFFFF;
+    background-color: var(--unity-colors-button-background);
+}
+.fv-badge--new { background-color: #FF6B9D; }
+.fv-badge--avatar { background-color: #7C6AF6; }
+.fv-badge--costume { background-color: #4FC3F7; color: #0E1A22; }
+.fv-badge--prop { background-color: #81C784; color: #0E1A22; }
+.fv-badge--gimmick { background-color: #FFB74D; color: #1F1400; }
+
+.fv-card-name { margin: 3px 6px 0 6px; color: var(--unity-colors-default-text); overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 11px; }
+.fv-card-sub { margin: 0 6px; color: var(--unity-colors-label-text); opacity: 0.65; font-size: 10px; overflow: hidden; white-space: nowrap; }
+
+/* ───── リスト表示（Unity の 1 列表示と同じ考え方） ───── */
+.fv-lrow {
+    flex-direction: row;
+    align-items: center;
+    height: 22px;
+    margin: 0 6px;
+    padding: 0 6px;
+    border-radius: 4px;
+}
+.fv-lrow:hover { background-color: var(--unity-colors-highlight-background-hover); }
+.fv-lrow--sel { background-color: var(--unity-colors-highlight-background); }
+.fv-lrow--sel:hover { background-color: var(--unity-colors-highlight-background); }
+.fv-lrow--new { border-left-width: 2px; border-left-color: #FF6B9D; }
+.fv-licon { width: 16px; height: 16px; margin-right: 6px; flex-shrink: 0; -unity-background-scale-mode: scale-to-fit; }
+.fv-lname { flex-grow: 1; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--unity-colors-default-text); }
+.fv-lrow .fv-badge { margin: 0 6px; }
+.fv-lcol { color: var(--unity-colors-label-text); opacity: 0.7; font-size: 11px; flex-shrink: 0; white-space: nowrap; -unity-text-align: middle-right; }
+.fv-lcol--kind { width: 78px; }
+.fv-lcol--size { width: 64px; }
+.fv-lcol--date { width: 112px; }
+
+/* ───── 下バー・空表示 ───── */
+.fv-status {
+    flex-direction: row;
+    align-items: center;
+    height: 22px;
+    flex-shrink: 0;
+    padding: 0 8px;
+    background-color: var(--unity-colors-toolbar-background);
+    border-top-width: 1px;
+    border-top-color: var(--unity-colors-toolbar-border);
+    color: var(--unity-colors-label-text);
+    font-size: 11px;
+}
+.fv-status-text { flex-grow: 1; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fv-status-actions { flex-direction: row; align-items: center; flex-shrink: 0; }
+.fv-status-actions .fv-btn { height: 18px; border-radius: 9px; padding: 0 8px; font-size: 11px; }
+.fv-status-src { color: var(--unity-colors-label-text); max-width: 240px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; margin-left: 8px; }
+.fv-empty {
+    position: absolute;
+    left: 0; right: 0; top: 40px;
+    -unity-text-align: upper-center;
+    color: var(--unity-colors-label-text);
+    opacity: 0.6;
+    font-size: 12px;
+}
+
+/* ───── 即時ツールチップ ───── */
+.fv-tip {
+    position: absolute;
+    max-width: 380px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border-width: 1px;
+    border-color: var(--unity-colors-default-border);
+    background-color: var(--unity-colors-tooltip-background);
+}
+.fv-tip-title { color: var(--unity-colors-default-text); -unity-font-style: bold; white-space: normal; }
+.fv-tip-body { color: var(--unity-colors-label-text); font-size: 11px; white-space: normal; margin-top: 3px; }

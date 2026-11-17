@@ -1,0 +1,13 @@
+{
+  "name": "com.nyaohtech.mvlctool",
+  "displayName": "Nt_MVLCTool",
+  "version": "3.1.0",
+  "unity": "2019.4",
+  "description": "MLVC 連携用の Unity エディタ拡張。終了時のサムネイル撮影、起動中の Unity への取り込み指示、読み込み完了の通知。",
+  "author": { "name": "nyaohtech", "url": "https://github.com/nyaohtech" },
+  "documentationUrl": "https://nyaohtech.github.io/nyaohtech-vpm/",
+  "keywords": ["VRChat", "editor", "MLVC"],
+  "vpmDependencies": {
+    "com.nyaohtech.mlvcfileview": "0.1.0"
+  }
+}
