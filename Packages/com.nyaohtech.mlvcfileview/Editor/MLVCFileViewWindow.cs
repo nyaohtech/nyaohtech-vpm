@@ -476,6 +476,14 @@ namespace Nyaohtech.MLVCFileView
             _list = CreateList();
             main.Add(_list);
 
+            // 何もない所の右クリックは、今開いているフォルダに対する作成メニュー
+            main.AddManipulator(new ContextualMenuManipulator(e =>
+            {
+                if (e.menu.MenuItems().Count > 0) return;
+                if (_tab != (int)Tab.Files) return;
+                FvAssetMenu.Add(e.menu, _cwd, e.mousePosition, OnProjectChanged);
+            }));
+
             _empty = new Label(""); _empty.AddToClassList("fv-empty"); _empty.pickingMode = PickingMode.Ignore;
             _empty.style.display = DisplayStyle.None;
             main.Add(_empty);
@@ -678,6 +686,7 @@ namespace Nyaohtech.MLVCFileView
                     if (FvTouched.IsTouched(root)) e.menu.AppendAction("未開封に戻す（" + root + "）", _ => FvTouched.Unmark(root));
                     else e.menu.AppendAction("既読にする（" + root + "）", _ => FvTouched.Mark(root));
                 }
+                FvAssetMenu.Add(e.menu, en.Path, e.mousePosition, OnProjectChanged);
             }));
         }
 
