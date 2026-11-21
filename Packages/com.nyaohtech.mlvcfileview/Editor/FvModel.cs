@@ -162,19 +162,37 @@ namespace Nyaohtech.MLVCFileView
             return false;
         }
 
-        // UI Toolkit の標準フォントに無い文字（絵文字・記号類）を取り除く。警告ログとの □ 表示を避けるため。
+        // UI Toolkit の標準フォントで確実に出せる文字だけ通す。
+        // 絵文字・制御文字・私用領域などは取り除き、フォントに無い記号類は ? に置き換える（警告ログや □ 表示を避けるため）
         public static string Clean(string s)
         {
             if (string.IsNullOrEmpty(s)) return "";
             var sb = new System.Text.StringBuilder(s.Length);
             foreach (char c in s)
             {
-                if (char.IsSurrogate(c) || c == '️' || c == '‍') continue;
-                if (c >= '☀' && c <= '➿') continue;
-                sb.Append(c);
+                if (c == '\n' || c == '\t') { sb.Append(c); continue; }
+                if (Drop(c)) continue;
+                sb.Append(Safe(c) ? c : '?');
             }
             return sb.ToString().Trim();
         }
+
+        static bool Drop(char c) =>
+            c < ' ' || (c >= '\u007f' && c <= '\u009f') || char.IsSurrogate(c)
+            || (c >= '​' && c <= '‏') || (c >= '‪' && c <= '‮') || (c >= '⁠' && c <= '⁯')
+            || (c >= '︀' && c <= '️') || (c >= '' && c <= '') || c == '﻿' || c >= '￰'
+            || (c >= '☀' && c <= '➿');
+
+        static bool Safe(char c) =>
+            c < 'ɐ'                                    // ASCII・ラテン
+            || (c >= 'Ͱ' && c <= 'ԯ')             // ギリシャ・キリル
+            || (c >= '‐' && c <= '‧') || (c >= '‰' && c <= '⁞')   // 一般句読点
+            || (c >= '←' && c <= '↓') || c == '■' || c == '□' || c == '▲' || c == '△' || c == '▼' || c == '▽' || c == '○' || c == '●'
+            || (c >= '　' && c <= 'ヿ')             // 和文記号・かな
+            || (c >= 'ㇰ' && c <= 'ㇿ')
+            || (c >= '㐀' && c <= '䶿') || (c >= '一' && c <= '鿿')   // 漢字
+            || (c >= '가' && c <= '힯')             // ハングル
+            || (c >= '！' && c <= 'ﾟ') || (c >= '￠' && c <= '￦');  // 全角・半角
 
         public static FvEntry Make(string assetPath, FileSystemInfo fi, bool isFolder)
         {

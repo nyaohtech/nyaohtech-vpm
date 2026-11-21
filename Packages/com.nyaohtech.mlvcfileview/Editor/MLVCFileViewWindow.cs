@@ -481,7 +481,7 @@ namespace Nyaohtech.MLVCFileView
             {
                 if (e.menu.MenuItems().Count > 0) return;
                 if (_tab != (int)Tab.Files) return;
-                FvAssetMenu.Show(_cwd, e.mousePosition);
+                FvAssetMenu.Show(this, _cwd, e.mousePosition);
             }));
 
             _empty = new Label(""); _empty.AddToClassList("fv-empty"); _empty.pickingMode = PickingMode.Ignore;
@@ -675,7 +675,7 @@ namespace Nyaohtech.MLVCFileView
             {
                 if (!(ve.userData is FvEntry en)) return;
                 Select(en);
-                FvAssetMenu.Show(en.Path, e.mousePosition);
+                FvAssetMenu.Show(this, en.Path, e.mousePosition);
             }));
         }
 
@@ -1052,7 +1052,7 @@ namespace Nyaohtech.MLVCFileView
             _crumbs.Clear();
             if (_tab != (int)Tab.Files || _query.Trim().Length > 0)
             {
-                var l = new Label(_query.Trim().Length > 0 ? "「" + _query.Trim() + "」の検索結果" : TabNames[_tab] + "（Assets 全体）");
+                var l = new Label(_query.Trim().Length > 0 ? "「" + FvScanner.Clean(_query) + "」の検索結果" : TabNames[_tab] + "（Assets 全体）");
                 l.AddToClassList("fv-crumb"); l.AddToClassList("fv-crumb--last");
                 _crumbs.Add(l);
                 return;

@@ -20,6 +20,9 @@ namespace Nyaohtech.MLVCFileView
     [Serializable] class LibItem { public string item_id = "", item_name = "", thumbnail_url = "", custom_thumbnail_path = ""; }
     [Serializable] class LibFile { public LibItem[] items = new LibItem[0]; }
 
+    [Serializable] class BoothImg { public string original = "", resized = ""; }
+    [Serializable] class BoothItem { public BoothImg[] images = new BoothImg[0]; }
+
     [Serializable] class FillRec
     {
         public string key = "", id = "", name = "", author = "", url = "", imported_at = "";
@@ -41,6 +44,7 @@ namespace Nyaohtech.MLVCFileView
         static readonly Queue<string> jobs = new Queue<string>();
         static string curKey;
         static UnityWebRequest req;
+        static int stage;  // 0=画像の取得 1=BOOTH 商品ページ(JSON)の取得
         static Dictionary<string, LibItem> lib;
         static long libStamp = -1;
 
@@ -238,8 +242,20 @@ namespace Nyaohtech.MLVCFileView
             if (req != null)
             {
                 if (!req.isDone) return;
-                byte[] data = req.result == UnityWebRequest.Result.Success ? req.downloadHandler.data : null;
+                bool ok = req.result == UnityWebRequest.Result.Success;
+                byte[] data = ok ? req.downloadHandler.data : null;
+                string text = ok && stage == 1 ? req.downloadHandler.text : null;
                 req.Dispose(); req = null;
+                if (stage == 1)
+                {
+                    // 商品ページから 1 枚目の画像 URL を得て、続けて画像を取りに行く
+                    string img = null;
+                    try { var b = JsonUtility.FromJson<BoothItem>(text ?? ""); if (b?.images != null && b.images.Length > 0) img = b.images[0].original.Length > 0 ? b.images[0].original : b.images[0].resized; }
+                    catch { }
+                    if (!string.IsNullOrEmpty(img)) { StartGet(img, 0); return; }
+                    Finish(curKey, null);
+                    return;
+                }
                 Finish(curKey, data);
                 return;
             }
@@ -249,8 +265,12 @@ namespace Nyaohtech.MLVCFileView
             tried.Add(curKey);
             if (!lastRecs.TryGetValue(curKey, out var x)) return;
 
-            var li = FindLib(x.r.item);
+            // まず VLA 自身が持っている画像（商品 ID のファイル）を使う。ライブラリに無い商品でもここにある
             byte[] bytes = null;
+            string own = VlaOwnThumb(x.r.item.id);
+            if (own != null) bytes = ReadSmall(own);
+
+            var li = bytes == null ? FindLib(x.r.item) : null;
             if (li != null)
             {
                 if (li.custom_thumbnail_path.Length > 0 && File.Exists(li.custom_thumbnail_path)) bytes = ReadSmall(li.custom_thumbnail_path);
@@ -260,16 +280,47 @@ namespace Nyaohtech.MLVCFileView
                     if (File.Exists(c)) bytes = ReadSmall(c);
                     else if (li.thumbnail_url.StartsWith("http"))
                     {
-                        req = UnityWebRequest.Get(li.thumbnail_url);
-                        req.SetRequestHeader("Referer", "https://booth.pm/");
-                        req.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-                        req.timeout = 15;
-                        req.SendWebRequest();
+                        StartGet(li.thumbnail_url, 0);
                         return;
                     }
                 }
             }
+            // VLA のライブラリに無い商品（直接取り込みなど）は、BOOTH の商品ページから画像を探す
+            if (bytes == null)
+            {
+                var m = System.Text.RegularExpressions.Regex.Match(x.r.item.url ?? "", @"^(https://[\w.-]*booth\.pm/[^?#]*/items/\d+)");
+                if (m.Success) { StartGet(m.Groups[1].Value + ".json", 1); return; }
+            }
             Finish(curKey, bytes);
+        }
+
+        static void StartGet(string url, int st)
+        {
+            stage = st;
+            req = UnityWebRequest.Get(url);
+            req.SetRequestHeader("Referer", "https://booth.pm/");
+            req.SetRequestHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+            req.timeout = 15;
+            req.SendWebRequest();
+        }
+
+        static string VlaOwnThumb(string id)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(id)) return null;
+                string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "VRC-LibraryAssist", "thumbnails");
+                if (!Directory.Exists(dir)) return null;
+                string best = null;
+                foreach (string f in Directory.GetFiles(dir, id + "*"))
+                {
+                    string n = Path.GetFileNameWithoutExtension(f);
+                    if (n.Equals(id + "_custom", StringComparison.OrdinalIgnoreCase)) return f;
+                    if (n.Equals(id, StringComparison.OrdinalIgnoreCase) && best == null) best = f;
+                }
+                return best;
+            }
+            catch { return null; }
         }
 
         static byte[] ReadSmall(string p)
