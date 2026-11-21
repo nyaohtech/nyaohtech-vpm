@@ -63,6 +63,13 @@ namespace Nyaohtech.MLVCFileView
             return !string.IsNullOrEmpty(root) && _byRoot.TryGetValue(root, out var it) ? it : null;
         }
 
+        // 手動で消されたフォルダは名乗らせない（残すと入れ直したフォルダの画像を取り違える）
+        public static string[] LiveRoots(string[] roots)
+        {
+            if (roots == null) return new string[0];
+            return roots.Where(r => !string.IsNullOrEmpty(r) && Directory.Exists(Path.Combine(FvPaths.ProjectRoot, r))).ToArray();
+        }
+
         // ファイルの更新日時が変わっていたら読み直す。force=false のときは 1.5 秒に 1 回だけ確認する。
         public static void Refresh(bool force)
         {
@@ -96,19 +103,21 @@ namespace Nyaohtech.MLVCFileView
                             var item = new FvLinkItem
                             {
                                 Key = it.key, Id = it.id, Name = it.name, Author = it.author, Url = it.url,
-                                ThumbRel = it.thumb, ImportedAt = at, Roots = it.roots ?? new string[0]
+                                ThumbRel = it.thumb, ImportedAt = at, Roots = LiveRoots(it.roots)
                             };
                             items.Add(item);
-                            foreach (var r in item.Roots) if (!string.IsNullOrEmpty(r)) byRoot[r] = item;
                         }
                     }
                 }
                 catch (Exception ex) { Debug.LogWarning("[MLVCFileView] fileview.json を読めませんでした: " + ex.Message); }
             }
             JsonKeys = new HashSet<string>(items.Select(i => i.Key), StringComparer.OrdinalIgnoreCase);
-            JsonRoots = new HashSet<string>(byRoot.Keys, StringComparer.OrdinalIgnoreCase);
+            JsonRoots = new HashSet<string>(items.SelectMany(i => i.Roots), StringComparer.OrdinalIgnoreCase);
             FvVlaFill.Merge(items, byRoot);
             items.Sort((a, b) => b.ImportedAt.CompareTo(a.ImportedAt));
+            // 同じフォルダを複数の項目が名乗るときは、一番新しく取り込んだものを採る（消して入れ直した後の古い記録を避ける）
+            for (int i = items.Count - 1; i >= 0; i--)
+                foreach (var r in items[i].Roots) byRoot[r] = items[i];
             _items = items;
             _byRoot = byRoot;
             Version++;

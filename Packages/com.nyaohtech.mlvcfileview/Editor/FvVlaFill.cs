@@ -88,9 +88,8 @@ namespace Nyaohtech.MLVCFileView
                 DateTime at = DateTime.MinValue;
                 if (f.imported_at.Length > 0 && DateTime.TryParse(f.imported_at, null, System.Globalization.DateTimeStyles.RoundtripKind, out var t))
                     at = t.ToLocalTime();
-                var it = new FvLinkItem { Key = f.key, Id = f.id, Name = f.name, Author = f.author, Url = f.url, ImportedAt = at, Roots = f.roots };
+                var it = new FvLinkItem { Key = f.key, Id = f.id, Name = f.name, Author = f.author, Url = f.url, ImportedAt = at, Roots = FvLink.LiveRoots(f.roots) };
                 items.Add(it);
-                foreach (var r in it.Roots) if (!byRoot.ContainsKey(r)) byRoot[r] = it;
             }
             // 画像が後から置かれたものは拾う
             foreach (var it in items)
@@ -161,6 +160,7 @@ namespace Nyaohtech.MLVCFileView
             foreach (var x in recs) latest[KeyOf(x.r.item.id, x.r.item.name)] = x;
 
             var dirs = TopDirs();
+            var prevFills = fills;
             var taken = new HashSet<string>(FvLink.JsonRoots, StringComparer.OrdinalIgnoreCase);
             var list = new List<FillRec>();
             foreach (var kv in latest.OrderBy(k => k.Value.at))
@@ -172,7 +172,10 @@ namespace Nyaohtech.MLVCFileView
                     key = kv.Key, id = r.item.id, name = r.item.name, author = r.item.author, url = r.item.url,
                     imported_at = at.ToUniversalTime().ToString("o")
                 };
-                f.roots = GuessRoots(at, r.item, recs, dirs, taken);
+                // 取り込み日時が同じ前回の推定が今も生きていれば使う（フォルダの更新日時の揺れで割り当てが変わらないように）
+                var old = prevFills.Find(p => p.key == kv.Key && p.imported_at == f.imported_at);
+                string[] kept = old != null ? FvLink.LiveRoots(old.roots) : new string[0];
+                f.roots = kept.Length > 0 && !kept.Any(taken.Contains) ? kept : GuessRoots(at, r.item, recs, dirs, taken);
                 foreach (var d in f.roots) taken.Add(d);
                 list.Add(f);
             }
@@ -218,11 +221,13 @@ namespace Nyaohtech.MLVCFileView
             foreach (var x in recs) if (x.at > at.AddSeconds(5) && x.at < end) { end = x.at; break; }
             DateTime start = at.AddSeconds(-10);
 
+            // 作られたのが期間内のフォルダだけを基本にする。更新日時だけが期間内のもの（既存フォルダを触っただけ）は、名前が似ているときだけ
             var cands = dirs.Where(d => !taken.Contains(d.Path) && d.Name != "Editor" &&
                 ((d.Born >= start && d.Born < end) || (d.Written >= start && d.Written < end))).ToList();
             if (cands.Count == 0) return new string[0];
 
             string nm = Norm(item.name), au = Norm(item.author);
+            bool Born(Dir d) => d.Born >= start && d.Born < end;
             var like = cands.Where(d =>
             {
                 string n = Norm(d.Name);
@@ -233,7 +238,7 @@ namespace Nyaohtech.MLVCFileView
             // 同時に複数入れたときは、名前が似たものだけ。単独なら似たものがあればそれ、無ければ新しく増えたもの全部
             bool group = recs.Count(x => Math.Abs((x.at - at).TotalSeconds) <= 5) > 1;
             if (group || like.Count > 0) return like.Select(d => d.Path).ToArray();
-            return cands.Select(d => d.Path).ToArray();
+            return cands.Where(Born).Select(d => d.Path).ToArray();
         }
 
         // ───────── 画像の取得（1 件ずつ、毎フレーム少しずつ） ─────────
