@@ -37,11 +37,8 @@ https://nyaohtech.github.io/nyaohtech-vpm/index.json
 
 不具合や気になる点があれば、Issues、または下の連絡先からお知らせください。
 
-## 連絡先・応援
+## 連絡先
 
 - 公式サイト: https://nyaohtech.raindrop.jp/
 - BOOTH: https://nyaohtech.booth.pm/
 - X: https://x.com/nyaoh_tech
-- FANBOX（月額 300 円から支援できます）: https://nyaohtech.fanbox.cc/
-
-個人で開発しています。高品質なツールを、たくさんの方に使い続けてもらうために、FANBOX での応援をいただけると、とても励みになります。

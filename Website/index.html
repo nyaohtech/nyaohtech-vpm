@@ -81,12 +81,6 @@
   .urlbox code { flex: 1 1 280px; background: var(--soft); border: 2px solid var(--line); border-radius: 10px; padding: 8px 12px; user-select: all; }
   .small { margin: 10px 0 0; font-size: 13px; color: var(--muted); }
 
-  /* ---------- 応援のお願い ---------- */
-  .support { margin: 34px 0 0; padding: 22px 24px; background: var(--soft); border: 2px solid var(--ink); border-radius: 20px; box-shadow: 5px 5px 0 var(--yellow); text-align: center; }
-  .support h2 { margin: 0 0 8px; padding: 0; font-size: 20px; }
-  .support h2::before, .support h2::after { display: none; }
-  .support p { margin: 6px auto; max-width: 34em; text-align: left; }
-  .support .btns { margin-top: 14px; }
 
   /* ---------- 製品カード (ステッカー風) ---------- */
   .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; list-style: none; margin: 0; padding: 6px 0 10px; }
@@ -168,13 +162,6 @@
     <p class="small">「VCC に追加する」で開かないときは、VCC の「Settings → Packages → Add Repository」にこの URL を貼り付けてください。</p>
   </div>
 
-  <aside class="support" id="support">
-    <h2>🐱 FANBOX で応援してもらえると、とても嬉しいです</h2>
-    <p>nyaohtech のツールは、個人で開発・運営しています。無料で使えるものも、これからもできるだけ高品質に保ちつつ、たくさんの方に使ってもらえるようにしたい。そのためには、開発や検証を続けるための支えがどうしても必要です。</p>
-    <p>FANBOX での支援は<strong>月額 300 円から</strong>できます。いただいた支援は、新しいツールの開発、不具合の修正、ガイドの充実に大切に使わせていただきます。気が向いたときに、ぜひ応援してください。</p>
-    <div class="btns"><a class="btn btn--solid" href="https://nyaohtech.fanbox.cc/" target="_blank" rel="noopener">FANBOX で支援する</a></div>
-  </aside>
-
   <section id="tools">
     <h2>ツール</h2>
     <ul class="cards">
@@ -184,7 +171,7 @@
         </div>
         <div class="card__body">
           <h3>Nt_AvatorPerformanceChecker</h3>
-          <span class="ver">v<span class="v">1.0.1</span></span><span class="dl" hidden></span>
+          <span class="ver">v<span class="v">1.0.3</span></span><span class="dl" hidden></span>
           <p class="lead">アバターの「重さ」を、見ながら作れるチェッカー。</p>
           <ul>
             <li>Scene ビューに、パフォーマンスランクを常時表示</li>
@@ -201,7 +188,7 @@
         </div>
         <div class="card__body">
           <h3>Nt_SimpleMatResize</h3>
-          <span class="ver">v<span class="v">1.1.1</span></span><span class="dl" hidden></span>
+          <span class="ver">v<span class="v">1.1.4</span></span><span class="dl" hidden></span>
           <p class="lead">テクスチャを一括で小さくして、アバターをぐっと軽く。</p>
           <ul>
             <li>アバターを複製して縮小するので、元のアバターは変更されません</li>
@@ -219,15 +206,47 @@
         <div class="card__body">
           <h3>Nt_AvatorSupports</h3>
           <span class="ver">v<span class="v">1.0.0</span></span>
-          <p class="lead">上の 2 つを、まとめて一度に入れられる詰め合わせ。</p>
+          <p class="lead">Nt_AvatorPerformanceChecker と Nt_SimpleMatResize を、まとめて一度に入れられる詰め合わせ。</p>
           <ul>
             <li>Nt_AvatorPerformanceChecker と Nt_SimpleMatResize を同時に導入</li>
             <li>VCC で「Nt_AvatorSupports」の「＋」を押すだけ（これ自体に機能はありません）</li>
           </ul>
         </div>
       </li>
+      <li class="card" data-pkg="com.nyaohtech.mlvcfileview">
+        <div class="card__thumb" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#333" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="2"/><rect x="18" y="5" width="9" height="9" rx="2"/><rect x="5" y="18" width="9" height="9" rx="2"/><rect x="18" y="18" width="9" height="9" rx="2"/></svg>
+        </div>
+        <div class="card__body">
+          <h3>Nt_MLVCFileView</h3>
+          <span class="ver">v<span class="v">0.2.3</span></span><span class="dl" hidden></span>
+          <p class="lead">Assets フォルダを、サムネイル付きのカードで見られるファイラー。</p>
+          <ul>
+            <li>アバター / 衣装 / 小物 / ギミックを、タブで切り替え</li>
+            <li>取り込み順の並び替えと、まだ開いていないフォルダの目印</li>
+            <li>MLVC / VLA で取り込んだものは、縮小サムネイル付きで表示</li>
+          </ul>
+          <div class="meta">Unity メニュー: <code>nyaohtech → MLVCFileView</code><br>Unity 2022.3 以降。MLVC がなくても、ファイラーとして使えます。</div>
+        </div>
+      </li>
+      <li class="card" data-pkg="com.nyaohtech.mvlctool">
+        <div class="card__thumb" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none" stroke="#333" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 11l-6 5 6 5M20 11l6 5-6 5"/></svg>
+        </div>
+        <div class="card__body">
+          <h3>Nt_MVLCTool</h3>
+          <span class="ver">v<span class="v">3.1.0</span></span><span class="dl" hidden></span>
+          <p class="lead">MLVC と Unity をつなぐ、裏方の連携ツール。</p>
+          <ul>
+            <li>Unity を閉じたとき、Scene ビューを MLVC の一覧のサムネイルに反映</li>
+            <li>MLVC から頼まれた unitypackage / テクスチャを取り込み</li>
+            <li>プロジェクトの読み込みが落ち着いたら、MLVC に通知</li>
+          </ul>
+          <div class="meta">MLVC から自動で入ります。単体で使う機能はありません。<br>Nt_MLVCFileView も一緒に入ります。</div>
+        </div>
+      </li>
     </ul>
-    <div class="btns"><a class="btn" href="https://nyaohtech.raindrop.jp/products/nt_avatorsupports/">製品ページを見る（公式サイト）</a></div>
+    <div class="btns"><a class="btn" href="https://nyaohtech.raindrop.jp/products/nt_avatorsupports/">Nt_AvatorSupports の製品ページを見る（公式サイト）</a></div>
   </section>
 
   <section>
@@ -252,6 +271,10 @@
     <details>
       <summary>Nt_AvatorPerformanceChecker の数値は VRChat の表示と同じですか？</summary>
       <p>ランクの基準は VRChat 公式の値です。VRAM やアップロード容量は目安の概算なので、最終確認は VRChat SDK のビルド画面で行ってください。</p>
+    </details>
+    <details>
+      <summary>Nt_MLVCFileView と Nt_MVLCTool は、MLVC がないと使えませんか？</summary>
+      <p>Nt_MLVCFileView は、MLVC がなくても、Assets のファイラーとして使えます。MLVC があると、取り込み元のサムネイルや履歴が付きます。Nt_MVLCTool は MLVC との連携用なので、MLVC を使わないなら入れなくて大丈夫です。</p>
     </details>
   </section>
 </main>
