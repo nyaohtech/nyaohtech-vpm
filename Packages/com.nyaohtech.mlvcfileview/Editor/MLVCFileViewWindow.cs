@@ -173,12 +173,15 @@ namespace Nyaohtech.MLVCFileView
         }
 
         // 空のプロジェクトでは聞かない（聞く対象が無い）。基準だけ記録して、これから増えたものを未開封にする
+        // Unity が空のプロジェクトでも自動で作るフォルダ。これだけなら「ユーザーの取り込み」は無いとみなす
+        static readonly string[] AutoFolders = { "Scenes", "Settings", "TutorialInfo", "XR", "XRI" };
+
         static bool HasTopFolders()
         {
             try
             {
                 foreach (var d in new System.IO.DirectoryInfo(FvPaths.Abs("Assets")).EnumerateDirectories())
-                    if (!d.Name.StartsWith(".") && !d.Name.EndsWith("~") && d.Name != "Scenes" && d.Name != "Settings" && d.Name != "TutorialInfo")
+                    if (!d.Name.StartsWith(".") && !d.Name.EndsWith("~") && Array.IndexOf(AutoFolders, d.Name) < 0)
                         return true;
             }
             catch { }
