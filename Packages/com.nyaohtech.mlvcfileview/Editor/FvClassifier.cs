@@ -19,7 +19,7 @@ namespace Nyaohtech.MLVCFileView
     }
 
     [Serializable]
-    internal sealed class FvRoleCacheJson { public int ver; public List<FvRoleRec> recs = new List<FvRoleRec>(); }
+    internal sealed class FvRoleCacheJson { public int ver; public bool ma; public List<FvRoleRec> recs = new List<FvRoleRec>(); }
 
     internal static class FvClassifier
     {
@@ -35,6 +35,25 @@ namespace Nyaohtech.MLVCFileView
             "ModularAvatarObjectToggle", "ModularAvatarMenuItem", "ModularAvatarShapeChanger",
             "ModularAvatarMaterialSetter", "ModularAvatarMaterialSwap"
         };
+
+        // Modular Avatar が入っているか。衣装・小物・ギミックの判定は、この部品に頼っている
+        static bool? _hasMa;
+        public static bool HasModularAvatar
+        {
+            get
+            {
+                if (_hasMa.HasValue) return _hasMa.Value;
+                bool found = false;
+                foreach (var a in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    if (!a.GetName().Name.StartsWith("nadena.dev.modular-avatar", StringComparison.OrdinalIgnoreCase)) continue;
+                    found = true; break;
+                }
+                if (!found) found = Directory.Exists("Packages/nadena.dev.modular-avatar");
+                _hasMa = found;
+                return found;
+            }
+        }
 
         static Dictionary<string, int> _guidFlags;  // "スクリプト GUID/fileID" → フラグ
         static readonly Dictionary<string, FvRoleRec> Cache = new Dictionary<string, FvRoleRec>(StringComparer.OrdinalIgnoreCase);
@@ -225,7 +244,8 @@ namespace Nyaohtech.MLVCFileView
             {
                 if (!File.Exists(CacheFile)) return;
                 var j = JsonUtility_FromJson(File.ReadAllText(CacheFile));
-                if (j != null && j.ver == CacheVer) foreach (var r in j.recs) Cache[r.path] = r;
+                // 保存時と Modular Avatar の有無が変わっていたら（あとから入れた・外した）、解析結果を捨てて引き直す
+                if (j != null && j.ver == CacheVer && j.ma == HasModularAvatar) foreach (var r in j.recs) Cache[r.path] = r;
             }
             catch { }
         }
@@ -239,7 +259,7 @@ namespace Nyaohtech.MLVCFileView
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(CacheFile));
-                var j = new FvRoleCacheJson { ver = CacheVer };
+                var j = new FvRoleCacheJson { ver = CacheVer, ma = HasModularAvatar };
                 // 実在するものだけを残す（削除済みプレハブの記録が溜まらないように）
                 foreach (var kv in Cache) if (File.Exists(FvPaths.Abs(kv.Key))) j.recs.Add(kv.Value);
                 File.WriteAllText(CacheFile, UnityEngine.JsonUtility.ToJson(j));

@@ -1087,6 +1087,8 @@ namespace Nyaohtech.MLVCFileView
         }
 
         // ───────────────────────── 表示の更新 ─────────────────────────
+        const string MaMissing = "ModularAvatarがないため判定できませんでした。";
+
         void BuildCrumbs()
         {
             _crumbs.Clear();
@@ -1095,6 +1097,11 @@ namespace Nyaohtech.MLVCFileView
                 var l = new Label(_query.Trim().Length > 0 ? "「" + FvScanner.Clean(_query) + "」の検索結果" : TabNames[_tab] + "（Assets 全体）");
                 l.AddToClassList("fv-crumb"); l.AddToClassList("fv-crumb--last");
                 _crumbs.Add(l);
+                if (_tab >= (int)Tab.Costume && !FvClassifier.HasModularAvatar)
+                {
+                    var n = new Label(MaMissing); n.AddToClassList("fv-ma-note");
+                    _crumbs.Add(n);
+                }
                 return;
             }
             var segs = _cwd.Split('/');
@@ -1134,7 +1141,9 @@ namespace Nyaohtech.MLVCFileView
                 if (_searching) msg = "検索中…";
                 else if (_query.Trim().Length > 0) msg = "見つかりませんでした";
                 else if (_tab != (int)Tab.Files)
-                    msg = FvClassifier.Running ? "プレハブを解析中…" : TabNames[_tab] + "として判定されたプレハブはありません";
+                    msg = FvClassifier.Running ? "プレハブを解析中…"
+                        : _tab >= (int)Tab.Costume && !FvClassifier.HasModularAvatar ? MaMissing
+                        : TabNames[_tab] + "として判定されたプレハブはありません";
                 else msg = "このフォルダは空です";
             }
             _empty.text = msg;

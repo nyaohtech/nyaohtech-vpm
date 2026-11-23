@@ -330,3 +330,5 @@
 }
 .fv-tip-title { color: var(--unity-colors-default-text); -unity-font-style: bold; white-space: normal; }
 .fv-tip-body { color: var(--unity-colors-label-text); font-size: 11px; white-space: normal; margin-top: 3px; }
+
+.fv-ma-note { color: rgb(230, 170, 60); margin-left: 10px; -unity-font-style: bold; }
