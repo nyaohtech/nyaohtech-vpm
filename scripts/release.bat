@@ -19,6 +19,8 @@ goto menu
 :build
 python scripts\make_unitypackage.py
 if errorlevel 1 (echo 失敗しました & goto menu)
+python scripts\make_fileview_unitypackage.py
+if errorlevel 1 (echo 失敗しました & goto menu)
 start "" "%cd%\dist"
 goto menu
 
@@ -36,10 +38,12 @@ goto menu
 echo 現在のバージョン:
 findstr /c:"\"version\"" Packages\com.nyaohtech.*\package.json
 type scripts\unitypackage.json
+type scripts\unitypackage_fv.json
 echo.
 echo タグの形:
 echo   VCC用    com.nyaohtech.simplematresize-1.1.4
 echo   BOOTH用  unitypackage-1.0.0
+echo   BOOTH用(FileView)  fileview-setup-1.0.0
 set /p tg=タグ名(空なら中止):
 if "%tg%"=="" goto menu
 git tag %tg%

@@ -49,30 +49,9 @@ def read_text(path):
         return lf(f.read())
 
 
-def main():
-    cfg = json.load(open(os.path.join(BASE, "scripts", "unitypackage.json"), encoding="utf-8"))
-    version = cfg["version"]
-    entries = {}   # Assets からのパス -> (種類, 中身 or None)
-
-    def add_dirs(path):
-        parts = path.split("/")
-        for i in range(2, len(parts)):
-            entries.setdefault("/".join(parts[:i]), ("folder", None))
-
-    asmdef = {"name": "Nyaohtech.Setup.Editor", "rootNamespace": "Nyaohtech.Setup", "includePlatforms": ["Editor"]}
-    src = [
-        (f"{ROOT}/Editor/NtSetup.cs", "cs", read_text(os.path.join(FILES, "NtSetup.cs"))),
-        (f"{ROOT}/Editor/Nyaohtech.Setup.Editor.asmdef", "asmdef", (json.dumps(asmdef, indent=4) + chr(10)).encode("utf-8")),
-        (f"{ROOT}/README.txt", "text", read_text(os.path.join(FILES, "README.txt"))),
-    ]
-    for dest, kind, data in src:
-        add_dirs(dest)
-        entries[dest] = (kind, data)
-    for d in ("Assets/nyaohtech", ROOT):
-        entries[d] = ("folder", None)
-
-    os.makedirs(DIST, exist_ok=True)
-    out = os.path.join(DIST, f"{NAME}_v{version}.unitypackage")
+def write_package(entries, out):
+    """entries: パス -> (種類, 中身 or None) か (種類, 中身, meta 文字列)。meta があればそれを使う"""
+    os.makedirs(os.path.dirname(out), exist_ok=True)
     buf = io.BytesIO()
     MTIME = 1735689600   # 固定の日時(同じ内容から同じファイルができるように)
     with tarfile.open(fileobj=buf, mode="w", format=tarfile.GNU_FORMAT) as tar:
@@ -96,16 +75,42 @@ def main():
 
         # Unity が書き出すパッケージと同じ並び: <guid>/ , asset , asset.meta , pathname
         for path in sorted(entries):
-            kind, data = entries[path]
-            g = guid(path)
+            kind, data, *mt = entries[path]
+            g = (mt[0].split("guid: ")[1].split()[0] if mt else guid(path))
             put_dir(g)
             if data is not None:
                 put(f"{g}/asset", data)
-            put(f"{g}/asset.meta", meta(g, kind).encode("utf-8"))
+            put(f"{g}/asset.meta", (mt[0] if mt else meta(g, kind)).encode("utf-8"))
             put(f"{g}/pathname", path.encode("utf-8"))
     with open(out, "wb") as f:
         with gzip.GzipFile(filename="archtemp.tar", fileobj=f, mode="wb", mtime=MTIME) as gz:   # Unity は archtemp.tar の名前がないと読まない
             gz.write(buf.getvalue())
+
+
+def main():
+    cfg = json.load(open(os.path.join(BASE, "scripts", "unitypackage.json"), encoding="utf-8"))
+    version = cfg["version"]
+    entries = {}   # Assets からのパス -> (種類, 中身 or None)
+
+    def add_dirs(path):
+        parts = path.split("/")
+        for i in range(2, len(parts)):
+            entries.setdefault("/".join(parts[:i]), ("folder", None))
+
+    asmdef = {"name": "Nyaohtech.Setup.Editor", "rootNamespace": "Nyaohtech.Setup", "includePlatforms": ["Editor"]}
+    src = [
+        (f"{ROOT}/Editor/NtSetup.cs", "cs", read_text(os.path.join(FILES, "NtSetup.cs"))),
+        (f"{ROOT}/Editor/Nyaohtech.Setup.Editor.asmdef", "asmdef", (json.dumps(asmdef, indent=4) + chr(10)).encode("utf-8")),
+        (f"{ROOT}/README.txt", "text", read_text(os.path.join(FILES, "README.txt"))),
+    ]
+    for dest, kind, data in src:
+        add_dirs(dest)
+        entries[dest] = (kind, data)
+    for d in ("Assets/nyaohtech", ROOT):
+        entries[d] = ("folder", None)
+
+    out = os.path.join(DIST, f"{NAME}_v{version}.unitypackage")
+    write_package(entries, out)
     print(f"made: {out}  ({os.path.getsize(out)//1024} KB, {len(entries)} items)")
     for p in sorted(entries):
         print("  ", p)

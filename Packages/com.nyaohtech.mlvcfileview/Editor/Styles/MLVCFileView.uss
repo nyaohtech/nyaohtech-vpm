@@ -276,6 +276,22 @@
 .fv-lcol--size { width: 64px; }
 .fv-lcol--date { width: 112px; }
 
+/* ───── BOOTH への案内（サムネイル付きの取り込みが無い間だけ） ───── */
+.fv-promo {
+    flex-direction: row;
+    align-items: center;
+    flex-shrink: 0;
+    height: 24px;
+    padding: 0 8px;
+    background-color: var(--unity-colors-toolbar-background);
+    border-bottom-width: 1px;
+    border-bottom-color: var(--unity-colors-toolbar-border);
+    font-size: 11px;
+}
+.fv-promo-text { flex-grow: 1; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--unity-colors-label-text); }
+.fv-promo-thanks { color: rgb(70, 190, 110); -unity-font-style: bold; }
+.fv-promo .fv-btn { height: 18px; border-radius: 9px; padding: 0 8px; font-size: 11px; flex-shrink: 0; }
+
 /* ───── 下バー・空表示 ───── */
 .fv-status {
     flex-direction: row;

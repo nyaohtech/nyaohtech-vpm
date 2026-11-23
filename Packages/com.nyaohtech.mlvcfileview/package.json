@@ -1,7 +1,7 @@
 {
   "name": "com.nyaohtech.mlvcfileview",
   "displayName": "Nt_MLVCFileView",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "unity": "2022.3",
   "description": "Assets フォルダを、サムネイル付きのカード表示で見られるファイラー。アバター / 衣装 / 小物（MA Bone Proxy）をタブで切り替え、取り込み順の並び替えと、まだ触れていないフォルダのハイライトに対応。MLVC / VLA で取り込んだものは縮小サムネイル付きで表示します。",
   "author": {

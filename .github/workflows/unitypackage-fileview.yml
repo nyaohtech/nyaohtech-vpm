@@ -1,0 +1,35 @@
+name: Release unitypackage (MLVCFileView)
+
+# [BOOTH 配布用の、Nt_MLVCFileView 本体同梱の .unitypackage]
+#   タグ名 = fileview-setup-<バージョン>（例: fileview-setup-1.0.0）をpushすると、
+#   .unitypackage を作ってReleaseに添付する。BOOTH へのアップロードは手作業。
+#   バージョンは scripts/unitypackage_fv.json と同じにする。
+on:
+  push:
+    tags:
+      - 'fileview-setup-[0-9]*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the tag matches the version
+        run: |
+          V=$(python3 -c "import json;print(json.load(open('scripts/unitypackage_fv.json'))['version'])")
+          test "fileview-setup-$V" = "$GITHUB_REF_NAME" || { echo "::error::tag $GITHUB_REF_NAME != fileview-setup-$V"; exit 1; }
+
+      - name: Build
+        run: python3 scripts/make_fileview_unitypackage.py
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/Nt_MLVCFileView_Setup_*.unitypackage \
+            --title "Nt_MLVCFileView Setup (unitypackage) ${GITHUB_REF_NAME#fileview-setup-}" \
+            --notes-file CHANGELOG.md

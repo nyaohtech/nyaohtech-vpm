@@ -116,6 +116,7 @@ namespace Nyaohtech.MLVCFileView
             if (_leftMode < 0) _leftMode = FvLink.Available ? 1 : 0;
 
             BuildToolbar(root);
+            BuildPromo(root);
 
             var split = new TwoPaneSplitView(0, 200, TwoPaneSplitViewOrientation.Horizontal);
             split.AddToClassList("fv-split");
@@ -146,11 +147,50 @@ namespace Nyaohtech.MLVCFileView
             return null;
         }
 
+        // サムネイル付きの取り込みが無い間は BOOTH への案内、1 つでもあれば お礼を緑で出す
+        const string BoothUrl = "https://nyaohtech.booth.pm/items/7515507";
+        VisualElement _promo, _promoBtn;
+        Label _promoText;
+
+        void BuildPromo(VisualElement root)
+        {
+            _promo = new VisualElement(); _promo.AddToClassList("fv-promo");
+            _promoText = new Label(); _promoText.AddToClassList("fv-promo-text");
+            _promo.Add(_promoText);
+            _promoBtn = Btn("BOOTH で見る", () => Application.OpenURL(BoothUrl), BoothUrl);
+            _promo.Add(_promoBtn);
+            root.Add(_promo);
+            UpdatePromo();
+        }
+
+        void UpdatePromo()
+        {
+            if (_promo == null) return;
+            bool any = FvLink.Items.Any(i => !string.IsNullOrEmpty(i.ThumbRel));
+            _promoText.text = any ? "VLAのご利用ありがとうございます！" : "サムネイル表示、BOOTH からの直インポートはこちら";
+            _promoText.EnableInClassList("fv-promo-thanks", any);
+            _promoBtn.style.display = any ? DisplayStyle.None : DisplayStyle.Flex;
+        }
+
+        // 空のプロジェクトでは聞かない（聞く対象が無い）。基準だけ記録して、これから増えたものを未開封にする
+        static bool HasTopFolders()
+        {
+            try
+            {
+                foreach (var d in new System.IO.DirectoryInfo(FvPaths.Abs("Assets")).EnumerateDirectories())
+                    if (!d.Name.StartsWith(".") && !d.Name.EndsWith("~") && d.Name != "Scenes" && d.Name != "Settings" && d.Name != "TutorialInfo")
+                        return true;
+            }
+            catch { }
+            return false;
+        }
+
         void AskBaseline()
         {
             EditorApplication.delayCall += () =>
             {
                 if (FvTouched.Baselined) return;
+                if (!HasTopFolders()) { FvTouched.SetBaselined(); return; }
                 bool yes = EditorUtility.DisplayDialog("MLVC FileView",
                     "今ある Assets 直下のフォルダをすべて「触れた」扱いにしますか？\n\n" +
                     "「はい」: これから増えたフォルダだけが未開封としてハイライトされます。\n" +
@@ -1156,7 +1196,7 @@ namespace Nyaohtech.MLVCFileView
                 if (!FvClassifier.Running || now - _lastRoleRefresh > 0.4) { _lastRoleRefresh = now; dirty = true; }
             }
 
-            if (FvLink.Version != _linkVer) { _linkVer = FvLink.Version; _treeDirty = true; dirty = true; }
+            if (FvLink.Version != _linkVer) { _linkVer = FvLink.Version; _treeDirty = true; dirty = true; UpdatePromo(); }
             else FvLink.Refresh(false);
 
             // Unity プレビューの生成待ち: 0.25 秒ごとに確認し、出来ていれば見えている行だけ再描画
